@@ -1,4 +1,5 @@
 import os
+import platform
 import time
 import json
 from typing import Any, Callable, List, Optional
@@ -17,10 +18,11 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
     output_dir: Optional[str] = None  
 
     def construct_full_prompt(self, goals: List[str]) -> str:
+        os_name = 'MacOS' if platform.system() == 'Darwin' else platform.system()
         prompt_start = (
-            "As an experienced ReactJS Developer, your task is to build apps"
+            "As an experienced ReactJS Developer, your task is to build apps "
             "given the requirements using the TDD methodology.\n"
-            f"You are working on a MacOS machine and the current working directory is "
+            f"You are working on a {os_name} machine and the current working directory is "
             f"{os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.\n"
             "You make decisions independently without seeking user assistance.\n"
             "Think step by step and reason yourself so as to make the right decisions.\n"
@@ -107,8 +109,8 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "thinking about similar events will help you remember.",
             "No user assistance",
             'Exclusively use the commands listed in double quotes e.g. "command name"',
-            'While running one or more terminal commands, ensure that the first command is cd to the project directory. \n'
-            'This is very important as the terminal tool is not persistent and directories are not preserved across steps.\n',
+            'While running one or more terminal commands, ensure that the first command is cd to the project directory. '
+            'This is very important as the terminal tool is not persistent and directories are not preserved across steps.',
             'Always use the full path to read/write any file.',
             'Do not run any cli commands in the terminal which may block it (eg. npm start). Always run npm test with CI as true. Ignore any npm warnings or audit issues.'
         ]
