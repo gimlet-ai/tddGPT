@@ -20,7 +20,7 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
     def construct_full_prompt(self, goals: List[str]) -> str:
         os_name = 'MacOS' if platform.system() == 'Darwin' else platform.system()
         prompt_start = (
-            "As an experienced Full Stack Web Developer, your task is to build apps "
+            "As an experienced Full Stack Web Developer, your task is to build apps \n"
             "given the requirements (or user stories) using the TDD methodology.\n"
             f"You are working on a {os_name} machine and the current working directory is "
             f"{os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.\n"
@@ -99,10 +99,10 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "thinking about similar events will help you remember.",
             "No user assistance",
             'Exclusively use the commands listed in double quotes e.g. "command name"',
-            'While running one or more terminal commands, ensure that the first command is cd to the project directory. '
-            'This is very important as the terminal tool is not persistent and directories are not preserved across steps.',
+            'While running one or more cli commands, ensure that the first command is cd to the project directory. '
+            'This is very important as the cli tool is not persistent and directories are not preserved across steps.',
             'Always use the full path to read/write any file.',
-            'Do not run any cli commands in the terminal which may block it (eg. npm start). Always run npm test with CI as true. Ignore any npm warnings or audit issues.'
+            'Always run npm test with CI as true. Ignore any npm warnings/audit/vulnerability issues.'
         ]
 
         resources = ["Long Term memory management."]

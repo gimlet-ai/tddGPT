@@ -83,7 +83,8 @@ class DevGPTAgent:
         {text}
         </output>
         Please summarize it and highlight the errors. Ignore any warnings, security
-        vulnerabilities, dependencies or audit issues. Start with 'The terminal command returned':
+        vulnerabilities, dependencies or audit issues. Start with 'The <cli> command returned:'. 
+        Repalce <cli> with the exact command.
 
         Assistant:
         """
@@ -133,7 +134,7 @@ class DevGPTAgent:
                     elif parsed["command"]["name"] == "write_file":
                         print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}\n')
                         print(f"{parsed['command']['args']['text']}\n")
-                    elif parsed["command"]["name"] == "terminal":
+                    elif parsed["command"]["name"] == "cli":
                         commands = parsed['command']['args']['commands']
                         command_str = "\n".join(commands) if isinstance(commands, list) else commands
                         print(f'\033[92mAction:\033[0m executing cli commands\n' + command_str + "\n")
@@ -171,7 +172,7 @@ class DevGPTAgent:
                     print('read file completed')
                 elif parsed["command"]["name"] == "write_file":
                     print(f'{len(parsed["command"]["args"]["text"])} bytes written') 
-                elif parsed["command"]["name"] == "terminal":
+                elif parsed["command"]["name"] == "cli":
                     print(summarized_observation)
                 print("\n")
 

@@ -1,4 +1,5 @@
 from .agent import DevGPTAgent
+from .cli import CLITool
 from langchain.chat_models import ChatOpenAI
 from langchain.tools.file_management.write import WriteFileTool
 from langchain.tools.file_management.read import ReadFileTool
@@ -12,9 +13,6 @@ import argparse
 import os
 
 import warnings
-
-# Ignore UserWarning
-warnings.filterwarnings("ignore", category=UserWarning)
 
 def parse_args():
     default_prompt = """Build a todo app. The user stories are as follows:
@@ -45,7 +43,7 @@ def main():
       os.makedirs(args.output_dir)
 
     tools = [
-        ShellTool(),
+        CLITool(),
         WriteFileTool(),
         ReadFileTool(),
     ]
