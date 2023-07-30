@@ -11,6 +11,11 @@ import faiss
 import argparse
 import os
 
+import warnings
+
+# Ignore UserWarning
+warnings.filterwarnings("ignore", category=UserWarning)
+
 def parse_args():
     default_prompt = """Build a todo app. The user stories are as follows:
     1. As a user, I should be able to add a new to-do item, so that I can remember the task I need to do.

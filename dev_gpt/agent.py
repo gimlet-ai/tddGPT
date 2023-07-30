@@ -76,9 +76,19 @@ class DevGPTAgent:
         )
 
     def summarize_text(self, text: str) -> str:
-        result = self.qa_chain.run("Summarize the following cli comand output. Go into the datails of errors, "
-                                   "if any. IGNORE any warnings, security vulnerabilities, dependencies and audit issues. "
-                                   "Start with 'the terminal command returned':\n " + text)
+        prompt = f"""
+        Human: Here is the output of a cli command:
+        
+        <output>
+        {text}
+        </output>
+        Please summarize it and highlight the errors. Ignore any warnings, security
+        vulnerabilities, dependencies or audit issues. Start with 'The terminal command returned':
+
+        Assistant:
+        """
+
+        result = self.qa_chain.run(prompt)
         return result
 
     def run(self, goals: List[str]) -> str:

@@ -1,12 +1,10 @@
-# AutoGPT for ReactJS apps
+# AutoGPT for Web App Development 
 
 "Programmers have programmed themselves out of jobs" - Unknown
 
-AutoGPT for ReactJS apps is an autonomous agent that builds applications just from prompts, following the Test-Driven Development (TDD) approach. It starts by writing tests for a feature, then implements the code to pass the tests, runs the tests and fixes any issues. It is capable of building an entire application step by step, iteratively. 
+AutoGPT for web app development is an autonomous agent that builds ReactJS, Flask, Express, etc. applications just from prompts, following the Test-Driven Development (TDD) approach. It starts by writing tests for a feature, then implements the code to pass the tests, runs the tests and fixes any issues. It is capable of building an entire application step by step, iteratively. 
 
 The agent has demonstrated its capability by successfully building a simple todo application all by itself, without any human intervention. However, like any AI agent, it does get lost once in a while and goes off the rails. The TDD approach mostly is able to keep it on track though. If it gets stuck, you can simply modify the prompt and restart the run.
-
-With the system prompt, we are trying to teach GPT-4 how to build ReactJS applications the correct way. This is a work in progress and there is a lot of room for improvement.
 
 This project is in a very early stage and serves as a basic demo. The idea is to illustrate the potential of autonomous coding agents. Within a couple of years, we should have code generation models much better than GPT-4. These agents will probably be able to write entire applications just with simple prompts one day. Imagine on-the-fly application generation! The possibilities are endless.
 
@@ -54,7 +52,7 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 
 7. Run dev-gpt
 ```
-dev-gpt --prompt 'build a simple todo app'
+dev-gpt --prompt 'build a ReactJS todo app with the following features: add a todo, mark it as complete and rename it'
 ```
 
 The app should be built in the todo-app in the current directory.
