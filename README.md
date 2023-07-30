@@ -6,11 +6,7 @@ AutoGPT for web app development is an autonomous agent that builds ReactJS, Flas
 
 The agent has demonstrated its capability by successfully building a simple todo application all by itself, without any human intervention. However, like any AI agent, it does get lost once in a while and goes off the rails. The TDD approach mostly is able to keep it on track though. If it gets stuck, you can simply modify the prompt and restart the run.
 
-This project is in a very early stage and serves as a basic demo. The idea is to illustrate the potential of autonomous coding agents. Within a couple of years, we should have code generation models much better than GPT-4. These agents will probably be able to write entire applications just with simple prompts one day. Imagine on-the-fly application generation! The possibilities are endless.
-
-## Project Status
-
-This project is in the very early alpha stage. Contributions are welcome!
+This project is in a early aplha stage. The idea is to illustrate the potential of autonomous coding agents. Soon, we should have code generation models much better than GPT-4 and with much better planning abilities. These agents will probably be able to write complex applications just with simple prompts within hours! 
 
 ## Setup Instructions
 
@@ -61,6 +57,13 @@ The app should be built in the todo-app in the current directory.
 ## Contributing
 
 We welcome contributions to this project. Please feel free to submit issues and pull requests. For major changes, please open an issue first to discuss what you would like to change.
+
+## Similar Projects
+
+https://github.com/paul-gauthier/aider
+https://github.com/smol-ai/developer
+https://github.com/AntonOsika/gpt-engineer
+https://github.com/biobootloader/mentat
 
 ## License
 
