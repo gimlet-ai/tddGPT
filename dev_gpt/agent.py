@@ -50,6 +50,7 @@ class DevGPTAgent:
     @classmethod
     def from_llm_and_tools(
         cls,
+        output_dir: str,
         memory: VectorStoreRetriever,
         tools: List[BaseTool],
         llm: BaseChatModel,
@@ -61,6 +62,7 @@ class DevGPTAgent:
             tools=tools,
             input_variables=["memory", "messages", "goals", "user_input"],
             token_counter=llm.get_num_tokens,
+            output_dir=output_dir,
         )
         human_feedback_tool = HumanInputRun() if human_in_the_loop else None
         chain = LLMChain(llm=llm, prompt=prompt)

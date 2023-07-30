@@ -1,7 +1,7 @@
 import os
 import time
 import json
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Optional
 
 from pydantic import BaseModel
 
@@ -14,12 +14,14 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
     tools: List[BaseTool]
     token_counter: Callable[[str], int]
     send_token_limit: int = 4196
+    output_dir: Optional[str] = None  
 
     def construct_full_prompt(self, goals: List[str]) -> str:
         prompt_start = (
             "As an experienced ReactJS Developer, your task is to build apps"
             "given the requirements using the TDD methodology.\n"
-            f"You are working on a MacOS machine and the current working directory is {os.getcwd()}.\n"
+            f"You are working on a MacOS machine and the current working directory is "
+            f"{os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.\n"
             "You make decisions independently without seeking user assistance.\n"
             "Think step by step and reason yourself so as to make the right decisions.\n"
             "Break the application into smaller reusable components, "
