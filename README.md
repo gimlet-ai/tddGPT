@@ -18,19 +18,49 @@ This project is in a very early stage and serves as a basic demo. The idea is to
 
 ## Setup Instructions
 
-1. Clone the repository to your local machine.
-2. Navigate to the project directory.
-3. Run `pip install .` to install the package.
-4. Set up your GPT-4 and Anthropic API keys as environment variables.
-5. Run the command `dev-gpt --prompt "Your prompt here"` to start the program.
-
-## Usage Examples
-
-Try it with "build a simple todo app" prompt.
-
-```shell
-dev-gpt --prompt "Build a simple todo app"
+1. Setup a virtual environment:
 ```
+python3 -m venv env
+```
+
+2. Activate the virtual environment:
+- On macOS and Linux:
+  ```
+  source env/bin/activate
+  ```
+- On Windows:
+  ```
+  .\env\Scripts\activate
+  ```
+3. Clone the repository to your local machine:
+```
+git clone https://github.com/gimlet-ai/dev-gpt.git
+
+```
+4. Navigate to the project directory:
+```
+cd dev-gpt
+```
+
+5. Run the following command to install the package and its dependencies:
+```
+pip install -r requirements.txt
+python setup.py install
+```
+
+6. Set up your GPT-4 and Anthropic API keys as environment variables.
+```
+export OPENAP_API_KEY="sk-..."
+export ANTHROPIC_API_KEY="sk-..."
+```
+
+7. Run dev-gpt
+```
+dev-gpt --prompt 'build a simple todo app'
+```
+
+The app should be built in the todo-app in the current directory.
+
 
 ## Contributing
 
