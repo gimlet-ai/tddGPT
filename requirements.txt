@@ -3,3 +3,5 @@ openai>=0.27
 langchain>=0.0.247
 faiss-cpu>=1.7
 langchain-experimental>=0.0.7
+anthropic>=0.3
+tiktoken>=0.4
