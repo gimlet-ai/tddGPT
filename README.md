@@ -53,17 +53,18 @@ dev-gpt --prompt 'build a ReactJS todo app with the following features: add a to
 
 The app should be built in the todo-app in the current directory.
 
+## Similar Projects
+
+- [Aider](https://github.com/paul-gauthier/aider)
+- [Smol Developer](https://github.com/smol-ai/developer)
+- [GPT-Engineer](https://github.com/AntonOsika/gpt-engineer)
+- [Mentat](https://github.com/biobootloader/mentat)
+
 
 ## Contributing
 
 We welcome contributions to this project. Please feel free to submit issues and pull requests. For major changes, please open an issue first to discuss what you would like to change.
 
-## Similar Projects
-
-https://github.com/paul-gauthier/aider
-https://github.com/smol-ai/developer
-https://github.com/AntonOsika/gpt-engineer
-https://github.com/biobootloader/mentat
 
 ## License
 
