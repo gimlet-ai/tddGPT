@@ -3,12 +3,12 @@ from typing import List, Optional
 from pydantic import ValidationError
 from langchain.chains.llm import LLMChain
 from langchain.chat_models.base import BaseChatModel
-from langchain.experimental.autonomous_agents.autogpt.output_parser import (
+from langchain_experimental.autonomous_agents.autogpt.output_parser import (
     AutoGPTOutputParser,
     BaseAutoGPTOutputParser,
 )
 from .prompt import DevGPTPrompt
-from langchain.experimental.autonomous_agents.autogpt.prompt_generator import (
+from langchain_experimental.autonomous_agents.autogpt.prompt_generator import (
     FINISH_NAME,
 )
 from langchain.memory import ChatMessageHistory
