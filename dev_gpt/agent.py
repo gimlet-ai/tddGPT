@@ -82,8 +82,9 @@ class DevGPTAgent:
         <output>
         {text}
         </output>
-        Please summarize it and highlight the errors. Ignore any warnings, security
-        vulnerabilities, dependencies or audit issues. Start with 'The <cli> command returned:'. 
+
+        Please summarize it and highlight the errors. Add a note that any warnings, security
+        vulnerabilities, dependencies or audit issues can be ignored. Start with 'The cli command <cli> returned: '. 
         Repalce <cli> with the exact command.
 
         Assistant:
@@ -149,7 +150,7 @@ class DevGPTAgent:
 
             tools = {t.name: t for t in self.tools}
             if action.name == FINISH_NAME:
-                return action.args["response"]
+                return action.args.get("response", "Goals successfully achieved! Exiting.") 
             if action.name in tools:
                 tool = tools[action.name]
                 try:
@@ -165,7 +166,7 @@ class DevGPTAgent:
 
                 summarized_observation = self.summarize_text(observation) if len(observation) > 100 else observation
 
-                result = f"Command {tool.name} output summary: {summarized_observation}"
+                result = f"{summarized_observation}"
 
                 print(f'\033[92mResult:\033[0m ', end="")
                 if parsed["command"]["name"] == "read_file":
