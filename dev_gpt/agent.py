@@ -150,7 +150,7 @@ class DevGPTAgent:
 
             tools = {t.name: t for t in self.tools}
             if action.name == FINISH_NAME:
-                return action.args.get("response", "Goals successfully achieved! Exiting.") 
+                return action.args.get("response", "Goals completed! Exiting.") 
             if action.name in tools:
                 tool = tools[action.name]
                 try:
