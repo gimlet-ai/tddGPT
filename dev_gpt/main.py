@@ -15,7 +15,7 @@ import os
 import warnings
 
 def parse_args():
-    default_prompt = """Build a todo app. The user stories are as follows:
+    default_prompt = """Build a ReactJS todo app. The user stories are as follows:
     1. As a user, I should be able to add a new to-do item, so that I can remember the task I need to do.
     2. As a user, I should be able to mark a to-do item as complete, so that I can track my progress.
     3. As a user, I should be able to rename a to-do item, in case I need to update the task details.

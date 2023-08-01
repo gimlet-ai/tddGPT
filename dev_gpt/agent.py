@@ -84,8 +84,7 @@ class DevGPTAgent:
         </output>
 
         Please summarize it and highlight the errors. Add a note that any warnings, security
-        vulnerabilities, dependencies or audit issues can be ignored. Start with 'The cli command <cli> returned: '. 
-        Repalce <cli> with the exact command.
+        vulnerabilities, dependencies or audit issues can be ignored. Start with 'The cli command returned ' 
 
         Assistant:
         """
@@ -164,9 +163,9 @@ class DevGPTAgent:
                         f"Error: {str(e)}, {type(e).__name__}, args: {action.args}"
                     )
 
-                summarized_observation = self.summarize_text(observation) if len(observation) > 100 else observation
+                summarized_observation = self.summarize_text(observation) if action.name == "cli" else observation
 
-                result = f"{summarized_observation}"
+                result = f"Command {tool.name} returned: {summarized_observation}"
 
                 print(f'\033[92mResult:\033[0m ', end="")
                 if parsed["command"]["name"] == "read_file":
