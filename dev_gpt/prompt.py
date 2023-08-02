@@ -21,7 +21,7 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         os_name = 'MacOS' if platform.system() == 'Darwin' else platform.system()
         prompt_start = (
             "As an experienced Full Stack Web Developer, your task is to build apps \n"
-            "given the requirements (or user stories) using the TDD methodology.\n"
+            "as per the specifications.\n"
             f"You are working on a {os_name} machine and the current working directory is "
             f"{os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.\n"
             "You make decisions independently without seeking user assistance.\n"
@@ -29,9 +29,6 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Follow the Test Driven Development methodology. Start by writing the test, \n"
             "then run the test, write the code, then run the test again, refactor the code \n"
             "and repeat till the tests pass. Each feaure should correspond to more or more test cases.\n"
-            "Follow an incremental development process: start with the simplest possible \n"
-            "version of a feature, make sure it works, then build on it adding complexity \n"
-            "and additional features in small manageable steps.\n"
             "Stick to industry standard best practices: emphasize simplicity and efficiency.\n"
             "If you have completed all your tasks, make sure to "
             'use the "finish" command.'
@@ -92,17 +89,14 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
     def get_prompt(self, tools: List[BaseTool]) -> str:
         constraints = [
             "~4000 word limit for short term memory. "
-            "Your short term memory is short, "
-            "so immediately save important information to files.",
             "If you are unsure how you previously did something "
             "or want to recall past events, "
             "thinking about similar events will help you remember.",
             "No user assistance",
             'Exclusively use the commands listed in double quotes e.g. "command name"',
             'While running one or more cli commands, ensure that the first command is cd to the project directory. '
-            'This is very important as the cli tool is not persistent and directories are not preserved across steps.',
             'Always use the full path to read/write any file.',
-            'Always run npm test with CI as true. Ignore any npm warnings/audit/vulnerability issues.'
+            'Always run npm test with CI as true and never run npm start.'
         ]
 
         resources = ["Long Term memory management."]

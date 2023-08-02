@@ -83,8 +83,8 @@ class DevGPTAgent:
         {text}
         </output>
 
-        Please summarize it and highlight the errors. Add a note that any warnings, security
-        vulnerabilities, dependencies or audit issues can be ignored. Start with 'The cli command returned ' 
+        Please summarize it and highlight any errors. Add a note that any warnings, security
+        vulnerabilities, dependencies or audit issues can be ignored. Start with 'The cli command was <status>'.
 
         Assistant:
         """

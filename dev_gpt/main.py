@@ -15,10 +15,10 @@ import os
 import warnings
 
 def parse_args():
-    default_prompt = """Build a ReactJS todo app. The user stories are as follows:
-    1. As a user, I should be able to add a new to-do item, so that I can remember the task I need to do.
-    2. As a user, I should be able to mark a to-do item as complete, so that I can track my progress.
-    3. As a user, I should be able to rename a to-do item, in case I need to update the task details.
+    default_prompt = """Build a ReactJS Todo App. The specifications are as follows:
+    1. Users should be able to input and submit new tasks through a form with a text input field and 'Add' button.
+    2. Users mark a task as complete by clicking the checkbox before each task, which then applies a strikethrough to the task.
+    3. Users can update task details directly by clicking the task name that enables in-place editing.
     """ 
 
     # Create an argument parser
