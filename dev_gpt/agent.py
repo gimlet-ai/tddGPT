@@ -20,10 +20,11 @@ from langchain.schema.messages import AIMessage, HumanMessage, SystemMessage
 from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
+from .summarizer import TextSummarizer
 import json
 import re
-from langchain.chains import RetrievalQA
-from langchain.chat_models import ChatAnthropic
+import time
+
 
 class DevGPTAgent:
     """Agent class for interacting with Dev-GPT."""
@@ -38,14 +39,14 @@ class DevGPTAgent:
         chat_history_memory: Optional[BaseChatMessageHistory] = None,
     ):
         self.memory = memory
+        self.memory_list = []
         self.next_action_count = 0
         self.chain = chain
         self.output_parser = output_parser
         self.tools = tools
         self.feedback_tool = feedback_tool
         self.chat_history_memory = chat_history_memory or ChatMessageHistory()
-        llm = ChatAnthropic()
-        self.qa_chain = RetrievalQA.from_chain_type(llm, retriever=self.memory)
+        self.text_summarizer = TextSummarizer(summary_type="cli")
 
     @classmethod
     def from_llm_and_tools(
@@ -76,20 +77,7 @@ class DevGPTAgent:
         )
 
     def summarize_text(self, text: str) -> str:
-        prompt = f"""
-        Human: Here is the output of a cli command:
-        
-        <output>
-        {text}
-        </output>
-
-        Please summarize it and highlight any errors. Add a note that any warnings, security
-        vulnerabilities, dependencies or audit issues can be ignored. Start with 'The cli command was <status>'.
-
-        Assistant:
-        """
-
-        result = self.qa_chain.run(prompt)
+        result = self.text_summarizer.summarize(text)
         return result
 
     def run(self, goals: List[str]) -> str:
@@ -97,8 +85,11 @@ class DevGPTAgent:
             "Determine which next command to use, "
             "and respond using the format specified above:"
         )
+
         # Interaction Loop
         loop_count = 0
+        timestamp = time.strftime('%c')
+
         while True:
             # Discontinue if continuous limit is reached
             loop_count += 1
@@ -107,7 +98,7 @@ class DevGPTAgent:
             assistant_reply = self.chain.run(
                 goals=goals,
                 messages=self.chat_history_memory.messages,
-                memory=self.memory,
+                memory=self.memory_list,
                 user_input=user_input,
             )
 
@@ -184,15 +175,37 @@ class DevGPTAgent:
                     f"Please refer to the 'COMMANDS' list for available "
                 )
 
-            memory_to_add = (
-                f"Assistant Reply: {assistant_reply} " f"\nResult: {result} "
-            )
+            parsed_memory_to_add = [
+                f"Step: {loop_count}",
+                f"Timestamp: {timestamp}",
+                f"Text: {parsed['thoughts']['text']}",
+                f"Reasoning: {parsed['thoughts']['reasoning']}",
+                f"Plan: \n{parsed['thoughts']['plan']}",
+                f"Criticism: {parsed['thoughts']['criticism']}",
+                f"Speak: {parsed['thoughts']['speak']}",
+            ]
+
+            if parsed["command"]["name"] == "read_file":
+                parsed_memory_to_add.append(f"Action: reading file {parsed['command']['args']['file_path']}")
+            elif parsed["command"]["name"] == "write_file":
+                parsed_memory_to_add.append(f"Action: writing file {parsed['command']['args']['file_path']}")
+                parsed_memory_to_add.append(f"{parsed['command']['args']['text']}")
+            elif parsed["command"]["name"] == "cli":
+                commands = parsed['command']['args']['commands']
+                command_str = " && ".join(commands) if isinstance(commands, list) else commands
+                parsed_memory_to_add.append(f"Action: executing cli commands {command_str}")
+
+            parsed_memory_to_add_str = '\n'.join(parsed_memory_to_add)
+            memory_to_add = f"\n{parsed_memory_to_add_str}\nResult: {result}\n"
+            
             if self.feedback_tool is not None:
                 feedback = f"\n{self.feedback_tool.run('Input: ')}"
                 if feedback in {"q", "stop"}:
                     print("EXITING")
                     return "EXITING"
-                memory_to_add += feedback
+                memory_to_add += f"\nFeedback: {feedback}"
 
             self.memory.add_documents([Document(page_content=memory_to_add)])
+            self.memory_list.append(Document(page_content=memory_to_add, metadata={"step_number": loop_count}))
             self.chat_history_memory.add_message(SystemMessage(content=result))
+

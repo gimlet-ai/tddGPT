@@ -43,7 +43,6 @@ python setup.py install
 6. Set up your GPT-4 and Anthropic API keys as environment variables.
 ```
 export OPENAI_API_KEY="sk-..."
-export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 7. Run dev-gpt
