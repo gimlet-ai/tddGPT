@@ -15,11 +15,7 @@ import os
 import warnings
 
 def parse_args():
-    default_prompt = """Build a ReactJS Todo App. The specifications are as follows:
-    1. Users should be able to input and submit new tasks through a form with a text input field and 'Add' button.
-    2. Users mark a task as complete by clicking the checkbox before each task, which then applies a strikethrough to the task.
-    3. Users can update task details directly by clicking the task name that enables in-place editing.
-    """ 
+    default_prompt = "build a flask app with a form to record the name, address, dob, height and weight and store it in a sqlite db" 
 
     # Create an argument parser
     parser = argparse.ArgumentParser(description='Generate code based on user stories')
