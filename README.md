@@ -4,9 +4,9 @@
 
 AutoGPT for web app development is an autonomous agent that builds ReactJS, Flask, Express, etc. applications just from prompts, following the Test-Driven Development (TDD) approach. It starts by writing tests for a feature, then implements the code to pass the tests, runs the tests and fixes any issues. 
 
-The agent can successfuly build simple CRUD apps. The TDD approach helps to keep the agent focussed on the goal. If it gets stuck, you can simply modify the prompt and restart the run.
+The agent can successfuly build simple CRUD apps. The TDD approach helps to keep the agent focussed on the goal. If it gets stuck, just modify the prompt and restart.
 
-This project is in early alpha stage.
+This project is in early alpha stage. GPT-4 API key is required.
 
 ## Setup Instructions
 
@@ -50,7 +50,7 @@ export OPENAI_API_KEY="sk-..."
 dev-gpt --prompt 'build a flask app with a form to record the name, address, dob, height and weight and store it in a sqlite db'
 ```
 
-The app should be built in the todo-app in the current directory.
+Check the flask-app directory.
 
 ## Similar Projects
 
