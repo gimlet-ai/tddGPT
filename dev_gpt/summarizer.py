@@ -10,16 +10,22 @@ class TextSummarizer:
         if summary_type == "cli":
             prompt_template = """The following is the output of a cli command:
 
+            <output>
             {text}
+            </output>
 
             Please summarize it in one paragraph and highlight the errors. Ignore any warnings, security
-            vulnerabilities, dependencies or audit issues. Start with 'The cli command was <status>'."""
+            vulnerabilities, dependencies or audit issues. Start with 'The cli command was <status>'.
+            """
 
-        elif summary_type == "step":
-            prompt_template = """Please summarize the following log. 
-            Start with 'Step <num>: ' and separate multiple steps with a newline.
+        elif summary_type == "memory":
+            prompt_template = """Please summarize the following log in one paragraph. 
 
+            <log>
             {text}
+            </log>
+
+            Start with 'Step <num>: ' and separate multiple steps with a newline.
             """
 
         else:

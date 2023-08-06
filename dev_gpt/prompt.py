@@ -2,7 +2,7 @@ import os
 import platform
 import time
 import json
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Tuple
 
 from pydantic import BaseModel
 
@@ -17,21 +17,22 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
     token_counter: Callable[[str], int]
     send_token_limit: int = 4196
     output_dir: Optional[str] = None  
-    summarizer: TextSummarizer = TextSummarizer(summary_type="step")
+    summarizer: TextSummarizer = TextSummarizer(summary_type="memory")
 
     def construct_full_prompt(self, goals: List[str]) -> str:
         os_name = 'MacOS' if platform.system() == 'Darwin' else platform.system()
         prompt_start = (
-            "As an experienced Full Stack Web Developer, your task is to build apps \n"
+            "As an experienced Full Stack Web Developer, your task is to build apps "
             "as per the specifications.\n"
             f"You are working on a {os_name} machine and the current working directory is "
             f"{os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.\n"
             "You make decisions independently without seeking user assistance.\n"
-            "think step by step and reason yourself so as to make the right decisions.\n"
-            "Follow the Test Driven Development methodology. Start by writing the test, \n"
-            "then run the test, write the code, then run the test again, refactor the code \n"
-            "and repeat till the tests pass. Each feaure should correspond to more or more test cases.\n"
-            "Stick to industry standard best practices and follow an incremental development process.\n"
+            "Think step by step and reason yourself so as to make the right decisions.\n"
+            "Evaluate the steps you have already completed before making a decision.\n"
+            "Follow Test Driven Development: write tests first, run tests, implement, "
+            "refactor, re-test and repeat.\n"
+            "Each feature/requirement/user story should have at least one unit test corresponding to it.\n"
+            "Stick to industry standard best practices and coding standards.\n"
             "If you have completed all your tasks, make sure to "
             'use the "finish" command.'
         )
@@ -54,38 +55,31 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         input_message = HumanMessage(content=kwargs["user_input"])
         input_message_tokens = self.token_counter(input_message.content)
 
-        memory_list: List[str] = kwargs["memory"]
-        relevant_docs = memory_list
-        relevant_memory = [d.page_content for d in relevant_docs]
-        relevant_memory_tokens = sum(
-            [self.token_counter(doc) for doc in relevant_memory]
-        )
+        memory = kwargs["memory"]
+        memory_list: List[str] = [d.page_content for d in memory]
 
-        relevant_memory_str = "\n".join(relevant_memory)
-        content_format = (
-            f"This reminds you of these events "
-            f"from your past:\n>>>>\n{relevant_memory_str}\n<<<<\n\n"
-        )
-        content_format_tokens = self.token_counter(content_format)
-
-        while used_tokens + content_format_tokens + input_message_tokens > self.send_token_limit:
+        memory_content, memory_content_tokens = self.gen_memory_tokens(memory_list)
+        while used_tokens + memory_content_tokens + input_message_tokens > self.send_token_limit:
             # Summarize the first element
-            summary = self.summarizer.summarize(relevant_memory[0])
+            summary = self.summarizer.summarize(memory_list[0])
             # Append the summary to the content of the second element
-            relevant_memory[1] = summary + "\n" + relevant_memory[1]
+            memory_list[1] = summary + "\n" + memory_list[1]
             # Remove the first element
-            relevant_memory = relevant_memory[1:]
-            relevant_memory_str = "\n".join(relevant_memory)
-            content_format = (
-                f"This reminds you of these events "
-                f"from your past:\n>>>>\n{relevant_memory_str}\n<<<<\n\n"
-            )
-            content_format_tokens = self.token_counter(content_format)
+            memory_list = memory_list[1:]
+            memory_content, memory_content_tokens = self.gen_memory_tokens(memory_list)
 
-        memory_message = SystemMessage(content=content_format)
+        memory_message = SystemMessage(content=memory_content)
         messages: List[BaseMessage] = [base_prompt, time_prompt, memory_message, input_message]
 
         return messages
+
+    def gen_memory_tokens(self, memory_list: List[str]) -> Tuple[str, int]:
+        memory_str = "\n".join(memory_list)
+        memory_content = (
+            f"You have already completed the following steps:\n>>>>\n{memory_str}\n<<<<\n\n"
+        )
+        memory_content_tokens = self.token_counter(memory_content)
+        return memory_content, memory_content_tokens
 
     def get_prompt(self, tools: List[BaseTool]) -> str:
         constraints = [
