@@ -2,9 +2,9 @@
 
 "Programmers have programmed themselves out of jobs" - Unknown
 
-AutoGPT for web app development is an autonomous agent that builds ReactJS, Flask, Express, etc. applications just from prompts, following the Test-Driven Development (TDD) approach. It starts by writing tests for a feature, then implements the code to pass the tests, runs the tests and fixes any issues. It is capable of building an entire application step by step, iteratively. 
+AutoGPT for web app development is an autonomous agent that builds ReactJS, Flask, Express, etc. applications just from prompts, following the Test-Driven Development (TDD) approach. It starts by writing tests for a feature, then implements the code to pass the tests, runs the tests and fixes any issues. 
 
-The agent has demonstrated its capability by successfully building a simple form application all by itself, without any human intervention. However, like any AI agent, it does get lost once in a while and goes off the rails. The TDD approach mostly is able to keep it on track though. If it gets stuck, you can simply modify the prompt and restart the run.
+The agent can successfuly build simple CRUD apps. The TDD approach helps to keep the agent focussed on the goal. If it gets stuck, you can simply modify the prompt and restart the run.
 
 This project is in early alpha stage.
 
