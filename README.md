@@ -40,7 +40,7 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
-6. Set up your GPT-4 and Anthropic API keys as environment variables.
+6. Set up your GPT-4 API keys as environment variables.
 ```
 export OPENAI_API_KEY="sk-..."
 ```
