@@ -36,7 +36,6 @@ cd dev-gpt
 
 5. Run the following command to install the package and its dependencies:
 ```
-pip install -r requirements.txt
 python setup.py install
 ```
 
@@ -50,7 +49,7 @@ export OPENAI_API_KEY="sk-..."
 dev-gpt --prompt 'build a flask app with a form to record the name, address, dob, height and weight and store it in a sqlite db'
 ```
 
-Check the flask-app directory.
+Check the flask-app directory for the generated app.
 
 ## Similar Projects
 
