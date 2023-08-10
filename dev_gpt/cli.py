@@ -31,7 +31,7 @@ def run_command_with_timeout(cmd, timeout_sec):
     if isinstance(cmd, list):
         cmd = ' && '.join(cmd)
 
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
     output = ''
     while True:
@@ -54,8 +54,7 @@ def run_command_with_timeout(cmd, timeout_sec):
 
     # Check for errors
     if proc.poll():
-        stderr = proc.stderr.read().decode()
-        return f"Command '{cmd}' failed with error: {stderr}\n{output}"
+        return f"Command '{cmd}' failed with error: {output}"
 
     return f"Command '{cmd}' succeeded with the following output:\n{output}"
 

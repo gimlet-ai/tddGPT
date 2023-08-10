@@ -1,5 +1,5 @@
-from .agent import DevGPTAgent
-from .cli import CLITool
+from agent import DevGPTAgent
+from cli import CLITool
 from langchain.chat_models import ChatOpenAI
 from langchain.tools.file_management.write import WriteFileTool
 from langchain.tools.file_management.read import ReadFileTool
@@ -11,8 +11,6 @@ from langchain.memory.chat_message_histories import FileChatMessageHistory
 import faiss
 import argparse
 import os
-
-import warnings
 
 def parse_args():
     default_prompt = "build a flask app with a form to record the name, address, dob, height and weight and store it in a sqlite db" 

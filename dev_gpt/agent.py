@@ -7,7 +7,7 @@ from langchain_experimental.autonomous_agents.autogpt.output_parser import (
     AutoGPTOutputParser,
     BaseAutoGPTOutputParser,
 )
-from .prompt import DevGPTPrompt
+from prompt import DevGPTPrompt
 from langchain_experimental.autonomous_agents.autogpt.prompt_generator import (
     FINISH_NAME,
 )
@@ -20,7 +20,7 @@ from langchain.schema.messages import AIMessage, HumanMessage, SystemMessage
 from langchain.tools.base import BaseTool
 from langchain.tools.human.tool import HumanInputRun
 from langchain.vectorstores.base import VectorStoreRetriever
-from .summarizer import TextSummarizer
+from summarizer import TextSummarizer
 import json
 import re
 import time
@@ -88,7 +88,6 @@ class DevGPTAgent:
 
         # Interaction Loop
         loop_count = 0
-        timestamp = time.strftime('%c')
 
         while True:
             # Discontinue if continuous limit is reached
@@ -156,16 +155,9 @@ class DevGPTAgent:
 
                 summarized_observation = self.summarize_text(observation) if action.name == "cli" else observation
 
-                result = f"Command {tool.name} returned: {summarized_observation}"
+                result = f"The {tool.name} tool returned: {summarized_observation}"
 
-                print(f'\033[92mResult:\033[0m ', end="")
-                if parsed["command"]["name"] == "read_file":
-                    print('read file completed')
-                elif parsed["command"]["name"] == "write_file":
-                    print(f'{len(parsed["command"]["args"]["text"])} bytes written') 
-                elif parsed["command"]["name"] == "cli":
-                    print(summarized_observation)
-                print("\n")
+                print(f'\033[92mResult:\033[0m {result}')
 
             elif action.name == "ERROR":
                 result = f"Error: {action.args}. "
@@ -177,11 +169,6 @@ class DevGPTAgent:
 
             parsed_memory_to_add = [
                 f"Step: {loop_count}",
-                f"Timestamp: {timestamp}",
-                f"Text: {parsed['thoughts']['text']}",
-                f"Reasoning: {parsed['thoughts']['reasoning']}",
-                f"Plan: \n{parsed['thoughts']['plan']}",
-                f"Criticism: {parsed['thoughts']['criticism']}",
                 f"Speak: {parsed['thoughts']['speak']}",
             ]
 
@@ -197,7 +184,7 @@ class DevGPTAgent:
 
             parsed_memory_to_add_str = '\n'.join(parsed_memory_to_add)
             memory_to_add = f"\n{parsed_memory_to_add_str}\nResult: {result}\n"
-            
+
             if self.feedback_tool is not None:
                 feedback = f"\n{self.feedback_tool.run('Input: ')}"
                 if feedback in {"q", "stop"}:
@@ -206,6 +193,6 @@ class DevGPTAgent:
                 memory_to_add += f"\nFeedback: {feedback}"
 
             self.memory.add_documents([Document(page_content=memory_to_add)])
-            self.memory_list.append(Document(page_content=memory_to_add, metadata={"step_number": loop_count}))
+            self.memory_list.append(Document(page_content=memory_to_add))
             self.chat_history_memory.add_message(SystemMessage(content=result))
 
