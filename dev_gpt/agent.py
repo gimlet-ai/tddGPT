@@ -193,6 +193,6 @@ class DevGPTAgent:
                 memory_to_add += f"\nFeedback: {feedback}"
 
             self.memory.add_documents([Document(page_content=memory_to_add)])
-            self.memory_list.append(Document(page_content=memory_to_add))
+            self.memory_list.append(Document(page_content=memory_to_add, metadata={"tool": tool.name, "observation": observation}))
             self.chat_history_memory.add_message(SystemMessage(content=result))
 

@@ -31,7 +31,7 @@ class TextSummarizer:
             Summarize each step one by one and mention it's success/failure status.  
             Skip any warnings, vulnerabilities, dependencies or audit issues. For npm test output, 
             describe the error in detail and quote the exact lines of code where the error occurred. 
-            For file reads, include the relevant lines of code as is. Start with 'Step <num>: ' 
+            Preserve the file content as is. Start with 'Step <num>: ' 
             """)
 
         else:
@@ -61,7 +61,10 @@ class TextSummarizer:
 
     def summarize(self, text: str) -> str:
         docs = [Document(page_content=text)]
-        text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=1000, chunk_overlap=0)
-        split_docs = text_splitter.split_documents(docs)
+        if len(text) > 3000:
+            text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=1000, chunk_overlap=0)
+            split_docs = text_splitter.split_documents(docs)
+        else:
+            split_docs = docs
         result = self.llm_chain.run({"input_documents": split_docs})
         return result

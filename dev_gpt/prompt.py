@@ -59,17 +59,24 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         memory_list: List[str] = [d.page_content for d in memory]
 
         if len(memory_list) > 0:
-          memory_content_str = "\n".join(memory_list)
-          memory_content_str = self.summarizer.summarize(memory_content_str)
-          memory_content = f"Completed Steps:\n{memory_content_str}\n"
-          memory_content_tokens = self.token_counter(memory_content)
+            memory_content_str = "\n".join(memory_list)
+            memory_content_str = self.summarizer.summarize(memory_content_str)
 
-          while used_tokens + memory_content_tokens + input_message_tokens > self.send_token_limit:
-              memory_content_str = self.summarizer.summarize(memory_content_str)
-              memory_content = f"Completed Steps:\n{memory_content_str}\n"
-              memory_content_tokens = self.token_counter(memory_content)
+            # Check if the last element in memory has a tool named 'read_file'
+            last_memory = memory[-1]
+            if last_memory.metadata.get('tool') == 'read_file':
+                file_content = last_memory.metadata.get('observation', '')
+                memory_content_str += f"\nFile Content:\n{file_content}"
 
-          full_prompt += memory_content
+            memory_content = f"Completed Steps:\n{memory_content_str}\n"
+            memory_content_tokens = self.token_counter(memory_content)
+
+            while used_tokens + memory_content_tokens + input_message_tokens > self.send_token_limit:
+                memory_content_str = self.summarizer.summarize(memory_content_str)
+                memory_content = f"Completed Steps:\n{memory_content_str}\n"
+                memory_content_tokens = self.token_counter(memory_content)
+
+            full_prompt += memory_content
 
         messages: List[BaseMessage] = [SystemMessage(content=full_prompt), HumanMessage(content=user_input)]
 
@@ -83,9 +90,9 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "thinking about completed steps will help you remember.",
             "No user assistance",
             'Exclusively use the commands listed in double quotes e.g. "command name"',
-            'While running one or more cli commands, ensure that the first command is cd to the project directory.',
+            'While running one or more cli commands, ALWAYS make sure that the first command is cd to the project directory.',
             'Always use the full path to read/write any file.',
-            'Always run npm test with CI as true and never run npm start.'
+            'For ReactJS projects, always use create-react-app to initialize the project, run npm test with CI as true and never run npm start or npm audit.'
         ]
 
         performance_evaluation = [
