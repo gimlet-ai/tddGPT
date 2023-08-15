@@ -17,8 +17,9 @@ class TextSummarizer:
 
             Please summarize it in one paragraph and highlight the errors. Skip any warnings, security
             vulnerabilities, dependencies or audit issues. For npm test output, describe the error in detail 
-            and quote the exact lines of code where the error occurred. For file reads, include the relevant
-            lines of code as is. Start with 'The cli command was <status>'.
+            and include the exact lines of code where the error occurred in the summary. For file reads, 
+            include the relevant lines of code as is. Skip any disclaimers about original summary/context. 
+            Start with 'The cli command was <status> ' where status is success/failure.
             """)
 
         elif summary_type == "memory":
@@ -28,10 +29,11 @@ class TextSummarizer:
             {text}
             </output>
 
-            Summarize each step one by one and mention it's success/failure status.  
+            Summarize the steps one by one. Make it progressive: include more details for the later steps.
             Skip any warnings, vulnerabilities, dependencies or audit issues. For npm test output, 
-            describe the error in detail and quote the exact lines of code where the error occurred. 
-            Preserve the file content as is. Start with 'Step <num>: ' 
+            describe the error in detail and include the exact lines of code where the error occurred. 
+            Preserve Thought and File Content as is for the read file action. Include all the steps in summary. 
+            Start with 'Step <num> (<status>): ' where status is success/failure.
             """)
 
         else:
@@ -39,12 +41,20 @@ class TextSummarizer:
 
         prompt = PromptTemplate.from_template(prompt_template)
         refine_template = textwrap.dedent("""Your job is to produce a final summary.
-        We have provided an existing summary up to a certain point: {existing_answer}.
+        We have provided an existing summary up to a certain point: 
+                                          
+        <original>
+        {existing_answer}
+        </original>
+
         We have the opportunity to refine the existing summary (only if needed) with some more context below.
-        ------------
+
+        <context> 
         {text}
-        ------------
+        </context>
+
         Given the new context, refine the original summary.  If the context isn't useful, return the original summary.
+        Do not include any meta comments about original summary/context.
         """)
 
         refine_prompt = PromptTemplate.from_template(refine_template)

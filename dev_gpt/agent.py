@@ -169,7 +169,8 @@ class DevGPTAgent:
 
             parsed_memory_to_add = [
                 f"Step: {loop_count}",
-                f"Speak: {parsed['thoughts']['speak']}",
+                f"Thought: {parsed['thoughts']['speak']}",
+                f"Action: {action.name}",
             ]
 
             if parsed["command"]["name"] == "read_file":
