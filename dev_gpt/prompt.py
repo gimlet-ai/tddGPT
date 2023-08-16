@@ -30,6 +30,7 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         As an experienced Full Stack Web Developer, your task is to build apps as per the specifications provided in the goals.
         You are working on a {os_name} machine and the current working directory is {os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.
         You make decisions independently without seeking user assistance. 
+        You are talented. Use your creativity to overcome technical challenges.
         Think step by step and build the app iteratively. Take into account the steps already completed.
         Follow Test Driven Development: write tests first, run tests, implement, refactor, re-test and repeat. 
         If the test fails, start by addressing the first error. Fix erorrs one by one.
@@ -60,7 +61,6 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         if len(memory_list) > 0:
             memory_content_str = "\n".join(memory_list)
-            memory_content_str = self.summarizer.summarize(memory_content_str)
 
             # Check if the last element in memory has a tool named 'read_file'
             last_memory = memory[-1]
@@ -68,13 +68,13 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
                 file_content = last_memory.metadata.get('observation', '')
                 memory_content_str += f"\nFile Content:\n{file_content}"
 
-            memory_content = f"Completed Steps:\n{memory_content_str}\n"
-            memory_content_tokens = self.token_counter(memory_content)
+            available_tokens = self.send_token_limit - used_tokens - input_message_tokens
 
-            while used_tokens + memory_content_tokens + input_message_tokens > self.send_token_limit:
-                memory_content_str = self.summarizer.summarize(memory_content_str)
-                memory_content = f"Completed Steps:\n{memory_content_str}\n"
-                memory_content_tokens = self.token_counter(memory_content)
+            # Call summarization with the available tokens
+            memory_content_str = self.summarizer.summarize(memory_content_str, token_max=available_tokens)
+
+            memory_content = f"Completed Steps:\n{memory_content_str}\n"
+            print(f"\n\033[36mSteps Summary:\033[0m\n{memory_content_str}\n")
 
             full_prompt += memory_content
 
@@ -101,8 +101,11 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Continuously review and analyze your actions "
             "to ensure you are performing to the best of your abilities.",
             "Constructively self-criticize your big-picture behavior constantly.",
-            "Assess the completed steps to evaluate if Test Driven Development process is be ahered to.",
-            "Every command has a cost, so be smart and efficient. "
+            "Assess the completed steps to evaluate if TDD process is being correctly followed.",
+            "Check if the first cli command is the cd to the project directory.",
+            "Check if the full path is being used for all file/directories.",
+            "Evaluate critically how many steps it took to clear a test for a particular feature.",
+            "Every step has a cost, so be smart and efficient. "
             "Aim to complete tasks in the least number of steps."
         ]
 

@@ -1,80 +1,101 @@
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.schema.document import Document
-from langchain.chains.summarize import load_summarize_chain
+from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
+from langchain.chains.mapreduce import MapReduceChain
 from langchain.text_splitter import CharacterTextSplitter
+from langchain.chains import StuffDocumentsChain, LLMChain
 import textwrap
 
 class TextSummarizer:
+    CLI_TEMPLATE = textwrap.dedent("""Please summarize it in one paragraph and highlight the errors. 
+            Ignore any warnings, security vulnerabilities, dependency/audit issues. 
+            For npm test output, describe the error in detail including the file name, line number and context.
+            Start with 'The commands <status> ' where status is succeded/failed.""")
+
+    MEMORY_TEMPLATE = textwrap.dedent("""Summarize the steps one by one. 
+            Make it progressive: include more details for the later steps. Use first person I.
+            Ensure that steps are summarized in the ascending order. 
+            Ignore any warnings, vulnerabilities, dependency/audit issues. 
+            For npm test output, describe the error in detail including the file name, line number and context.
+            Preserve Thought and File Content as is for the read file action.
+            Start with 'Step <num> (<status>): ' where status is success/failure.""")
+
     def __init__(self, summary_type: str):
+        llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-16k")
+
         # Define the prompt based on the summary_type
+        prompt_template = self.get_prompt_template(summary_type)
+
+        # MapReduce chain for longer texts
+        map_prompt = PromptTemplate.from_template(prompt_template.replace("{text}", "{docs}"))
+        map_chain = LLMChain(llm=llm, prompt=map_prompt)
+
+        reduce_template = self.get_reduce_template(summary_type)
+        reduce_prompt = PromptTemplate.from_template(reduce_template)
+        reduce_chain = LLMChain(llm=llm, prompt=reduce_prompt)
+
+        combine_documents_chain = StuffDocumentsChain(
+            llm_chain=reduce_chain, document_variable_name="doc_summaries"
+        )
+
+        self.reduce_documents_chain = ReduceDocumentsChain(
+            combine_documents_chain=combine_documents_chain,
+            collapse_documents_chain=combine_documents_chain,
+            token_max=4000,
+        )
+
+        self.map_reduce_chain = MapReduceDocumentsChain(
+            llm_chain=map_chain,
+            reduce_documents_chain=self.reduce_documents_chain,
+            document_variable_name="docs",
+            return_intermediate_steps=False,
+        )
+
+    def get_prompt_template(self, summary_type: str) -> str:
         if summary_type == "cli":
-            prompt_template = textwrap.dedent("""The following is the output of a cli command:
+            return textwrap.dedent(f"""The following is the output of a cli command:
 
             <output>
-            {text}
+            {{text}}
             </output>
 
-            Please summarize it in one paragraph and highlight the errors. Skip any warnings, security
-            vulnerabilities, dependencies or audit issues. For npm test output, describe the error in detail 
-            and include the exact lines of code where the error occurred in the summary. For file reads, 
-            include the relevant lines of code as is. Skip any disclaimers about original summary/context. 
-            Start with 'The cli command was <status> ' where status is success/failure.
-            """)
-
+            {self.CLI_TEMPLATE}""")
         elif summary_type == "memory":
-            prompt_template = textwrap.dedent("""The following is the log of steps already completed. 
+            return textwrap.dedent(f"""The following is the log of steps already completed. 
 
             <output>
-            {text}
+            {{text}}
             </output>
 
-            Summarize the steps one by one. Make it progressive: include more details for the later steps.
-            Skip any warnings, vulnerabilities, dependencies or audit issues. For npm test output, 
-            describe the error in detail and include the exact lines of code where the error occurred. 
-            Preserve Thought and File Content as is for the read file action. Include all the steps in summary. 
-            Start with 'Step <num> (<status>): ' where status is success/failure.
-            """)
-
+            {self.MEMORY_TEMPLATE}""")
         else:
             raise ValueError("Invalid summary type")
 
-        prompt = PromptTemplate.from_template(prompt_template)
-        refine_template = textwrap.dedent("""Your job is to produce a final summary.
-        We have provided an existing summary up to a certain point: 
-                                          
-        <original>
-        {existing_answer}
-        </original>
+    def get_reduce_template(self, summary_type: str) -> str:
+        if summary_type == "cli":
+            return textwrap.dedent(f"""The following is a set of summaries from CLI commands:
 
-        We have the opportunity to refine the existing summary (only if needed) with some more context below.
+            <summaries>
+            {{doc_summaries}}
+            </summaries>
 
-        <context> 
-        {text}
-        </context>
+            {self.CLI_TEMPLATE}""")
+        elif summary_type == "memory":
+            return textwrap.dedent(f"""The following is a set of summaries from memory logs:
 
-        Given the new context, refine the original summary.  If the context isn't useful, return the original summary.
-        Do not include any meta comments about original summary/context.
-        """)
+            <summaries>
+            {{doc_summaries}}
+            </summaries>
 
-        refine_prompt = PromptTemplate.from_template(refine_template)
-        llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-16k")
-        self.llm_chain = load_summarize_chain(
-            llm=llm,
-            chain_type="refine",
-            question_prompt=prompt,
-            refine_prompt=refine_prompt,
-            return_intermediate_steps=False,
-            input_key="input_documents",
-            output_key="output_text",
-        )
-
-    def summarize(self, text: str) -> str:
-        docs = [Document(page_content=text)]
-        if len(text) > 3000:
-            text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=1000, chunk_overlap=0)
-            split_docs = text_splitter.split_documents(docs)
+            {self.MEMORY_TEMPLATE}""")
         else:
-            split_docs = docs
-        result = self.llm_chain.run({"input_documents": split_docs})
+            raise ValueError("Invalid summary type")
+
+    def summarize(self, text: str, token_max: int = 4000) -> str:
+        docs = [Document(page_content=text)]
+        text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=1000, chunk_overlap=0)
+        split_docs = text_splitter.split_documents(docs)
+        self.reduce_documents_chain.token_max = token_max
+        result = self.map_reduce_chain.run(split_docs)
         return result
