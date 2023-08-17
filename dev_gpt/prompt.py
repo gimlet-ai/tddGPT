@@ -30,7 +30,7 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         As an experienced Full Stack Web Developer, your task is to build apps as per the specifications provided in the goals.
         You are working on a {os_name} machine and the current working directory is {os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.
         You make decisions independently without seeking user assistance. 
-        You are talented. Use your creativity to overcome technical challenges.
+        You are talented: use your creativity to overcome technical challenges.
         Think step by step and build the app iteratively. Take into account the steps already completed.
         Follow Test Driven Development: write tests first, run tests, implement, refactor, re-test and repeat. 
         If the test fails, start by addressing the first error. Fix erorrs one by one.
@@ -57,24 +57,19 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         input_message_tokens = self.token_counter(user_input)
 
         memory = kwargs["memory"]
-        memory_list: List[str] = [d.page_content for d in memory]
+        last_elements_list = memory[-10:]
 
-        if len(memory_list) > 0:
-            memory_content_str = "\n".join(memory_list)
-
-            # Check if the last element in memory has a tool named 'read_file'
-            last_memory = memory[-1]
-            if last_memory.metadata.get('tool') == 'read_file':
-                file_content = last_memory.metadata.get('observation', '')
-                memory_content_str += f"\nFile Content:\n{file_content}"
+        # Combine the last 10 elements
+        if len(last_elements_list) > 0:
+            last_elements = "\n".join([element.page_content for element in last_elements_list])
 
             available_tokens = self.send_token_limit - used_tokens - input_message_tokens
 
             # Call summarization with the available tokens
-            memory_content_str = self.summarizer.summarize(memory_content_str, token_max=available_tokens)
+            summary = self.summarizer.summarize(last_elements, token_max=available_tokens)
 
-            memory_content = f"Completed Steps:\n{memory_content_str}\n"
-            print(f"\n\033[36mSteps Summary:\033[0m\n{memory_content_str}\n")
+            memory_content = f"Completed Steps:\n{summary}\n"
+            print(f"\n\033[36mSteps Summary:\033[0m\n{summary}\n")
 
             full_prompt += memory_content
 

@@ -168,16 +168,15 @@ class DevGPTAgent:
                 )
 
             parsed_memory_to_add = [
-                f"Step: {loop_count}",
                 f"Thought: {parsed['thoughts']['speak']}",
-                f"Action: {action.name}",
             ]
 
             if parsed["command"]["name"] == "read_file":
                 parsed_memory_to_add.append(f"Action: reading file {parsed['command']['args']['file_path']}")
+                parsed_memory_to_add.append(f"Code:\n{observation}")
             elif parsed["command"]["name"] == "write_file":
                 parsed_memory_to_add.append(f"Action: writing file {parsed['command']['args']['file_path']}")
-                parsed_memory_to_add.append(f"{parsed['command']['args']['text']}")
+                parsed_memory_to_add.append(f"Code:\n{parsed['command']['args']['text']}")
             elif parsed["command"]["name"] == "cli":
                 commands = parsed['command']['args']['commands']
                 command_str = " && ".join(commands) if isinstance(commands, list) else commands
@@ -194,6 +193,6 @@ class DevGPTAgent:
                 memory_to_add += f"\nFeedback: {feedback}"
 
             self.memory.add_documents([Document(page_content=memory_to_add)])
-            self.memory_list.append(Document(page_content=memory_to_add, metadata={"tool": tool.name, "observation": observation}))
+            self.memory_list.append(Document(page_content=memory_to_add))
             self.chat_history_memory.add_message(SystemMessage(content=result))
 

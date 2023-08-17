@@ -8,21 +8,18 @@ from langchain.chains import StuffDocumentsChain, LLMChain
 import textwrap
 
 class TextSummarizer:
-    CLI_TEMPLATE = textwrap.dedent("""Please summarize it in one paragraph and highlight the errors. 
-            Ignore any warnings, security vulnerabilities, dependency/audit issues. 
-            For npm test output, describe the error in detail including the file name, line number and context.
+    CLI_TEMPLATE = textwrap.dedent("""Please summarize it as concisely as possible and highlight the result. 
+            For npm test output, describe the error in detail including the file name, line number and code snippets.
+            Ignore any suggestions, warnings, security vulnerabilities, dependency/audit issues. 
             Start with 'The commands <status> ' where status is succeded/failed.""")
 
-    MEMORY_TEMPLATE = textwrap.dedent("""Summarize the steps one by one. 
-            Make it progressive: include more details for the later steps. Use first person I.
-            Ensure that steps are summarized in the ascending order. 
-            Ignore any warnings, vulnerabilities, dependency/audit issues. 
-            For npm test output, describe the error in detail including the file name, line number and context.
-            Preserve Thought and File Content as is for the read file action.
-            Start with 'Step <num> (<status>): ' where status is success/failure.""")
+    MEMORY_TEMPLATE = textwrap.dedent("""Summarize each step concisely and highlight the result.
+            For npm test output, describe the error in detail including the file name, line number and code snippets.
+            Ignore any suggestions, warnings, security vulnerabilities, dependency/audit issues. 
+            Start with '- I successfully executed the <command> ' """)
 
     def __init__(self, summary_type: str):
-        llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-16k")
+        llm = ChatOpenAI(temperature=0.8, model_name="gpt-3.5-turbo-16k")
 
         # Define the prompt based on the summary_type
         prompt_template = self.get_prompt_template(summary_type)
