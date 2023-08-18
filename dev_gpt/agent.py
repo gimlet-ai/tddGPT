@@ -97,7 +97,7 @@ class DevGPTAgent:
             assistant_reply = self.chain.run(
                 goals=goals,
                 messages=self.chat_history_memory.messages,
-                memory=self.memory_list,
+                memory=self.memory,
                 user_input=user_input,
             )
 
@@ -132,7 +132,7 @@ class DevGPTAgent:
                   print(f"Missing key: {e}")
 
             self.chat_history_memory.add_message(HumanMessage(content=user_input))
-            self.chat_history_memory.add_message(AIMessage(content=assistant_reply))
+            self.chat_history_memory.add_message(AIMessage(content=json.dumps(parsed)))
 
             # Get command name and arguments
             action = self.output_parser.parse(assistant_reply)
@@ -168,6 +168,7 @@ class DevGPTAgent:
                 )
 
             parsed_memory_to_add = [
+                f"Step: {loop_count}",
                 f"Thought: {parsed['thoughts']['speak']}",
             ]
 
@@ -180,10 +181,10 @@ class DevGPTAgent:
             elif parsed["command"]["name"] == "cli":
                 commands = parsed['command']['args']['commands']
                 command_str = " && ".join(commands) if isinstance(commands, list) else commands
-                parsed_memory_to_add.append(f"Action: executing cli commands {command_str}")
+                parsed_memory_to_add.append(f"Action: executing cli commands '{command_str}'")
+                parsed_memory_to_add.append(f"Result:\n{summarized_observation}")
 
-            parsed_memory_to_add_str = '\n'.join(parsed_memory_to_add)
-            memory_to_add = f"\n{parsed_memory_to_add_str}\nResult: {result}\n"
+            memory_to_add = '\n'.join(parsed_memory_to_add)
 
             if self.feedback_tool is not None:
                 feedback = f"\n{self.feedback_tool.run('Input: ')}"
@@ -194,5 +195,5 @@ class DevGPTAgent:
 
             self.memory.add_documents([Document(page_content=memory_to_add)])
             self.memory_list.append(Document(page_content=memory_to_add))
-            self.chat_history_memory.add_message(SystemMessage(content=result))
+            self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add}))
 

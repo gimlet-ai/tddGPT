@@ -27,13 +27,12 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         os_name = 'MacOS' if platform.system() == 'Darwin' else platform.system()
 
         prompt_start = textwrap.dedent(f"""
-        As an experienced Full Stack Web Developer, your task is to build apps as per the specifications provided in the goals.
+        As an experienced Full Stack Web Developer, your task is to build apps as per the specifications.
         You are working on a {os_name} machine and the current working directory is {os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.
         You make decisions independently without seeking user assistance. 
-        You are talented: use your creativity to overcome technical challenges.
-        Think step by step and build the app iteratively. Take into account the steps already completed.
+        You are talented: use your inherent creativity to overcome technical challenges.
+        Think step by step and build the app iteratively. T the last step.
         Follow Test Driven Development: write tests first, run tests, implement, refactor, re-test and repeat. 
-        If the test fails, start by addressing the first error. Fix erorrs one by one.
         Each feature/requirement/user story should have at least one unit test corresponding to it.
         Stick to industry standard best practices and coding standards.
         Write the code for each file in full.
@@ -50,58 +49,66 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         return full_prompt
 
     def format_messages(self, **kwargs: Any) -> List[BaseMessage]:
-        full_prompt = self.construct_full_prompt(kwargs["goals"])
-        used_tokens = self.token_counter(full_prompt)
+        base_prompt = SystemMessage(content=self.construct_full_prompt(kwargs["goals"]))
+        used_tokens = self.token_counter(base_prompt.content)
 
         user_input = kwargs["user_input"]
         input_message_tokens = self.token_counter(user_input)
 
-        memory = kwargs["memory"]
-        last_elements_list = memory[-10:]
+        memory: VectorStoreRetriever = kwargs["memory"]
+        previous_messages = kwargs["messages"]
+        relevant_docs = memory.get_relevant_documents(str(previous_messages[-10:]))
+        relevant_memory = [d.page_content for d in relevant_docs]
+        relevant_memory_tokens = sum([self.token_counter(doc) for doc in relevant_memory])
 
-        # Combine the last 10 elements
-        if len(last_elements_list) > 0:
-            last_elements = "\n".join([element.page_content for element in last_elements_list])
+        # Get the last system message
+        last_system_message = next((m for m in reversed(previous_messages) if isinstance(m, SystemMessage) and m.additional_kwargs.get("metadata")), None)
 
-            available_tokens = self.send_token_limit - used_tokens - input_message_tokens
+        # Extract the last step from metadata if available
+        last_step = last_system_message.additional_kwargs.get("metadata") if last_system_message else "None"
+        last_step_tokens = self.token_counter(last_step)
 
-            # Call summarization with the available tokens
-            summary = self.summarizer.summarize(last_elements, token_max=available_tokens)
+        # Calculate the available tokens, considering the last step
+        available_tokens = self.send_token_limit - used_tokens - input_message_tokens - last_step_tokens
 
-            memory_content = f"Completed Steps:\n{summary}\n"
-            print(f"\n\033[36mSteps Summary:\033[0m\n{summary}\n")
+        # Fit as much relevant memory as possible based on available tokens
+        while relevant_memory_tokens > available_tokens:
+            relevant_memory = relevant_memory[-1:]
+            relevant_memory_tokens = sum([self.token_counter(doc) for doc in relevant_memory])
 
-            full_prompt += memory_content
+        relevant_memory_str = "\n".join(relevant_memory) if len(relevant_memory) > 0 else "None"
+        memory_content = f"Relevant Steps:\n>>>>\n{relevant_memory_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
+
+        full_prompt = base_prompt.content + memory_content
 
         messages: List[BaseMessage] = [SystemMessage(content=full_prompt), HumanMessage(content=user_input)]
 
         return messages
-
+    
     def get_prompt(self, tools: List[BaseTool]) -> str:
         constraints = [
             "~4000 word limit for short term memory. "
             "If you are unsure how you previously did something "
             "or want to recall past events, "
-            "thinking about completed steps will help you remember.",
+            "thinking about relevant steps will help you remember.",
             "No user assistance",
             'Exclusively use the commands listed in double quotes e.g. "command name"',
             'While running one or more cli commands, ALWAYS make sure that the first command is cd to the project directory. '
             'This is extremely important as the cli tool does not preserve the working directory between steps.',
             'Always use the full path to read/write any file or directory.',
             'For ReactJS projects, always use create-react-app to initialize the project (in the project directory), '
-            'use function components (in src/components directory), run npm test with CI as true and never run npm start/npm audit.'
+            'use function components (in src/components directory), write the tests in the src/tests directory, implement the app '
+            'in src/App.js, run npm test with CI as true and never run npm start/npm audit.'
         ]
 
         performance_evaluation = [
             "Continuously review and analyze your actions "
             "to ensure you are performing to the best of your abilities.",
             "Constructively self-criticize your big-picture behavior constantly.",
-            "Assess the completed steps to evaluate if TDD process is being correctly followed.",
             "Check if the first cli command is the cd to the project directory.",
             "Check if the full path is being used for all file/directories.",
-            "Evaluate critically how many steps it took to clear a test for a particular feature.",
             "Every step has a cost, so be smart and efficient. "
-            "Aim to complete tasks in the least number of steps."
+            "Aim to complete the app in the least number of steps."
         ]
 
         response_format = {
