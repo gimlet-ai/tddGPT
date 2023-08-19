@@ -31,11 +31,11 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         You are working on a {os_name} machine and the current working directory is {os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.
         You make decisions independently without seeking user assistance. 
         You are talented: use your inherent creativity to overcome technical challenges.
-        Think step by step and build the app iteratively. T the last step.
-        Follow Test Driven Development: write tests first, run tests, implement, refactor, re-test and repeat. 
+        Think step by step and build the app iteratively. Pay attention to detail.
+        Follow Test-Driven Development (TDD): write tests, implement, refactor, re-test. 
         Each feature/requirement/user story should have at least one unit test corresponding to it.
-        Stick to industry standard best practices and coding standards.
-        Write the code for each file in full.
+        Adhere to industry best practices and coding standards.
+        Write the code for each file in full (you cannot edit files).
         If you have completed all your tasks, make sure to use the "finish" command.
         """)
 
@@ -86,8 +86,7 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         return messages
     
     def get_prompt(self, tools: List[BaseTool]) -> str:
-        constraints = [
-            "~4000 word limit for short term memory. "
+        instructions = [
             "If you are unsure how you previously did something "
             "or want to recall past events, "
             "thinking about relevant steps will help you remember.",
@@ -96,9 +95,20 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'While running one or more cli commands, ALWAYS make sure that the first command is cd to the project directory. '
             'This is extremely important as the cli tool does not preserve the working directory between steps.',
             'Always use the full path to read/write any file or directory.',
-            'For ReactJS projects, always use create-react-app to initialize the project (in the project directory), '
-            'use function components (in src/components directory), write the tests in the src/tests directory, implement the app '
-            'in src/App.js, run npm test with CI as true and never run npm start/npm audit.'
+        ]
+
+        reactjs_instructions = [
+            'Always use create-react-app to initialize the project (in the project directory).',
+            'Use function components (in src/components directory).',
+            'Write the tests in the src/tests directory.',
+            'Implement the main App in src/App.js and not in src/components/App.js.',
+            'Write the tests for the main App src/App.test.js and not in src/tests/App.test.js.',
+            'Run npm test with CI as true.',
+            'Never run npm start/npm audit.',
+            'Follow a consistent coding style',
+            'Implement proper error handling and provide user-friendly error messages.',
+            'Document all components and major functions, explaining their purpose and usage.',
+            'Aim for a high test coverage.'
         ]
 
         performance_evaluation = [
@@ -124,12 +134,14 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         formatted_response_format = json.dumps(response_format, indent=4)
 
-        constraints_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(constraints))
+        instructions_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(instructions))
+        reactjs_instructions_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(reactjs_instructions))
         commands_str = "\n".join(f"{i+1}. {tool.name}: {tool.description}, args json schema: {json.dumps(tool.args)}" for i, tool in enumerate(tools))
         performance_evaluation_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(performance_evaluation))
 
         prompt_string = (
-            f"Constraints:\n{constraints_str}\n\n"
+            f"Instructions:\n{instructions_str}\n\n"
+            f"For ReactJS Projects:\n{reactjs_instructions_str}\n\n"
             f"Commands:\n{commands_str}\n\n"
             f"Performance Evaluation:\n{performance_evaluation_str}\n\n"
             f"Response Format:\n{formatted_response_format}\n\n"

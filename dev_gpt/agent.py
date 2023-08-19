@@ -24,6 +24,8 @@ from summarizer import TextSummarizer
 import json
 import re
 import time
+import signal
+import sys
 
 
 class DevGPTAgent:
@@ -39,7 +41,6 @@ class DevGPTAgent:
         chat_history_memory: Optional[BaseChatMessageHistory] = None,
     ):
         self.memory = memory
-        self.memory_list = []
         self.next_action_count = 0
         self.chain = chain
         self.output_parser = output_parser
@@ -88,6 +89,13 @@ class DevGPTAgent:
 
         # Interaction Loop
         loop_count = 0
+        log_file = open("run.log", "w")
+
+        def signal_handler(sig, frame):
+            print('You pressed Ctrl+C!')
+            log_file.close()
+            sys.exit(0)
+        signal.signal(signal.SIGINT, signal_handler)
 
         while True:
             # Discontinue if continuous limit is reached
@@ -102,6 +110,7 @@ class DevGPTAgent:
             )
 
             print(f"\033[91mStep Number:\033[0m {loop_count}")
+            log_file.write(f"Step Number: {loop_count}\n")
 
             try:
                 parsed = json.loads(assistant_reply, strict=False)
@@ -115,19 +124,28 @@ class DevGPTAgent:
             if parsed:
                 try:
                     print(f'\033[92mText:\033[0m {parsed["thoughts"]["text"]}')
+                    log_file.write(f'Text: {parsed["thoughts"]["text"]}\n')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
+                    log_file.write(f'Reasoning: {parsed["thoughts"]["reasoning"]}\n')
                     print(f'\033[92mPlan:\033[0m\n{parsed["thoughts"]["plan"]}')
+                    log_file.write(f'Plan:\n{parsed["thoughts"]["plan"]}\n')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
+                    log_file.write(f'Criticism: {parsed["thoughts"]["criticism"]}\n')
                     print(f'\033[92mSpeak:\033[0m {parsed["thoughts"]["speak"]}')
+                    log_file.write(f'Speak: {parsed["thoughts"]["speak"]}\n')
                     if parsed["command"]["name"] == "read_file":
                         print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
+                        log_file.write(f'Action: reading file {parsed["command"]["args"]["file_path"]}\n')
                     elif parsed["command"]["name"] == "write_file":
                         print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}\n')
+                        log_file.write(f'Action: writing file {parsed["command"]["args"]["file_path"]}\n')
                         print(f"{parsed['command']['args']['text']}\n")
+                        log_file.write(f"{parsed['command']['args']['text']}\n")
                     elif parsed["command"]["name"] == "cli":
                         commands = parsed['command']['args']['commands']
                         command_str = "\n".join(commands) if isinstance(commands, list) else commands
                         print(f'\033[92mAction:\033[0m executing cli commands\n' + command_str + "\n")
+                        log_file.write(f'Action: executing cli commands\n' + command_str + "\n")
                 except KeyError as e:
                   print(f"Missing key: {e}")
 
@@ -139,6 +157,7 @@ class DevGPTAgent:
 
             tools = {t.name: t for t in self.tools}
             if action.name == FINISH_NAME:
+                log_file.close()
                 return action.args.get("response", "Goals completed! Exiting.") 
             if action.name in tools:
                 tool = tools[action.name]
@@ -157,7 +176,8 @@ class DevGPTAgent:
 
                 result = f"The {tool.name} tool returned: {summarized_observation}"
 
-                print(f'\033[92mResult:\033[0m {result}')
+                print(f'\033[92mResult:\033[0m {result}\n')
+                log_file.write(f'Result: {result}\n\n')
 
             elif action.name == "ERROR":
                 result = f"Error: {action.args}. "
@@ -169,7 +189,7 @@ class DevGPTAgent:
 
             parsed_memory_to_add = [
                 f"Step: {loop_count}",
-                f"Thought: {parsed['thoughts']['speak']}",
+                f"Thought: {parsed['thoughts']['text']}",
             ]
 
             if parsed["command"]["name"] == "read_file":
@@ -190,10 +210,11 @@ class DevGPTAgent:
                 feedback = f"\n{self.feedback_tool.run('Input: ')}"
                 if feedback in {"q", "stop"}:
                     print("EXITING")
+                    log_file.write("EXITING\n")
+                    log_file.close()
                     return "EXITING"
                 memory_to_add += f"\nFeedback: {feedback}"
 
             self.memory.add_documents([Document(page_content=memory_to_add)])
-            self.memory_list.append(Document(page_content=memory_to_add))
             self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add}))
 
