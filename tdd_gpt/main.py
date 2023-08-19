@@ -1,4 +1,4 @@
-from agent import DevGPTAgent
+from agent import TddGPTAgent
 from cli import CLITool
 from langchain.chat_models import ChatOpenAI
 from langchain.tools.file_management.write import WriteFileTool
@@ -51,7 +51,7 @@ def main():
     vectorstore = FAISS(embeddings_model.embed_query, index, InMemoryDocstore({}), {})
 
     # Initialize the agent
-    agent = DevGPTAgent.from_llm_and_tools(
+    agent = TddGPTAgent.from_llm_and_tools(
         output_dir=args.output_dir,
         tools=tools,
         llm=ChatOpenAI(model='gpt-4-0613', temperature=0),

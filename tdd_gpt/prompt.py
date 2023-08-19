@@ -13,7 +13,7 @@ from langchain.vectorstores.base import VectorStoreRetriever
 from summarizer import TextSummarizer
 import textwrap
 
-class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
+class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
     tools: List[BaseTool]
     token_counter: Callable[[str], int]
     send_token_limit: int = 4196

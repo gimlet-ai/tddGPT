@@ -7,7 +7,7 @@ from langchain_experimental.autonomous_agents.autogpt.output_parser import (
     AutoGPTOutputParser,
     BaseAutoGPTOutputParser,
 )
-from prompt import DevGPTPrompt
+from prompt import TddGPTPrompt
 from langchain_experimental.autonomous_agents.autogpt.prompt_generator import (
     FINISH_NAME,
 )
@@ -28,8 +28,8 @@ import signal
 import sys
 
 
-class DevGPTAgent:
-    """Agent class for interacting with Dev-GPT."""
+class TddGPTAgent:
+    """Agent class for interacting with TDD-GPT."""
 
     def __init__(
         self,
@@ -59,8 +59,8 @@ class DevGPTAgent:
         human_in_the_loop: bool = False,
         output_parser: Optional[BaseAutoGPTOutputParser] = None,
         chat_history_memory: Optional[BaseChatMessageHistory] = None,
-    ) -> DevGPTAgent:
-        prompt = DevGPTPrompt(
+    ) -> TddGPTAgent:
+        prompt = TddGPTPrompt(
             tools=tools,
             input_variables=["memory", "messages", "goals", "user_input"],
             token_counter=llm.get_num_tokens,
