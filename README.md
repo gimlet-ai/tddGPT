@@ -1,8 +1,8 @@
-# AutoGPT for Web App Development 
+# GPT Agent for Test-Driven Development(TDD)
 
 "Programmers have programmed themselves out of jobs" - Unknown
 
-AutoGPT for web app development is an autonomous agent that builds ReactJS, Flask, Express, etc. applications just from prompts, following the Test-Driven Development (TDD) approach. It starts by writing tests for a feature, then implements the code to pass the tests, runs the tests and fixes any issues. 
+TDD-GPT is an autonomous agent that builds ReactJS, Flask, Express, etc. applications just from prompts, following the Test-Driven Development (TDD) approach. It starts by writing tests for a feature, then implements the code to pass the tests, runs the tests and fixes any issues. 
 
 The agent can successfuly build simple CRUD apps. The TDD approach helps to keep the agent focussed on the goal. If it gets stuck, just modify the prompt and restart.
 
@@ -26,12 +26,12 @@ python3 -m venv env
   ```
 3. Clone the repository to your local machine:
 ```
-git clone https://github.com/gimlet-ai/dev-gpt.git
+git clone git@github.com:gimlet-ai/tdd-gpt-agent.git
 
 ```
 4. Navigate to the project directory:
 ```
-cd dev-gpt
+cd tdd-gpt-agent
 ```
 
 5. Run the following command to install the package and its dependencies:
@@ -44,9 +44,9 @@ python setup.py install
 export OPENAI_API_KEY="sk-..."
 ```
 
-7. Run dev-gpt
+7. Run tdd-gpt-agent
 ```
-dev-gpt --prompt 'build a flask app with a form to record the name, address, dob, height and weight and store it in a sqlite db'
+tdd-gpt --prompt 'build a flask app with a form to record the name, address, dob, height and weight and store it in a sqlite db'
 ```
 
 Check the flask-app directory for the generated app.
