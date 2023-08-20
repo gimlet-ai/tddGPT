@@ -30,9 +30,8 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         As an experienced Full Stack Web Developer, your task is to build apps as per the specifications.
         You are working on a {os_name} machine and the current working directory is {os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.
         You make decisions independently without seeking user assistance. 
-        You are talented: use your inherent creativity to overcome technical challenges.
-        Think step by step and build the app iteratively. Pay attention to detail.
-        Follow Test-Driven Development (TDD): write tests, implement, refactor, re-test. 
+        Think step by step. Look at the last step to decide about this step and next one.
+        Follow Test-Driven Development (TDD): write tests, implement, test, refactor. 
         Each feature/requirement/user story should have at least one unit test corresponding to it.
         Adhere to industry best practices and coding standards.
         Write the code for each file in full (you cannot edit files).
@@ -76,7 +75,7 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
             relevant_memory = relevant_memory[-1:]
             relevant_memory_tokens = sum([self.token_counter(doc) for doc in relevant_memory])
 
-        relevant_memory_str = "\n".join(relevant_memory) if len(relevant_memory) > 0 else "None"
+        relevant_memory_str = "\n\n".join(relevant_memory) if len(relevant_memory) > 0 else "None"
         memory_content = f"Relevant Steps:\n>>>>\n{relevant_memory_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
 
         full_prompt = base_prompt.content + memory_content
@@ -87,10 +86,9 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
     
     def get_prompt(self, tools: List[BaseTool]) -> str:
         instructions = [
-            "If you are unsure how you previously did something "
-            "or want to recall past events, "
-            "thinking about relevant steps will help you remember.",
             "No user assistance",
+            "Thinking about relevant and last steps will help you remember about past events.",
+            "Follow the next step plan religiously. Backtrack only when you run into problems.",
             'Exclusively use the commands listed in double quotes e.g. "command name"',
             'While running one or more cli commands, ALWAYS make sure that the first command is cd to the project directory. '
             'This is extremely important as the cli tool does not preserve the working directory between steps.',
@@ -100,15 +98,15 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
         reactjs_instructions = [
             'Always use create-react-app to initialize the project (in the project directory).',
             'Use function components (in src/components directory).',
-            'Write the tests in the src/tests directory.',
+            'Write the tests in the src/tests directory (execpt for the main App).',
             'Implement the main App in src/App.js and not in src/components/App.js.',
-            'Write the tests for the main App src/App.test.js and not in src/tests/App.test.js.',
+            '**Similarly, write the tests for the main App src/App.test.js and not in src/tests/App.test.js.**', 
             'Run npm test with CI as true.',
             'Never run npm start/npm audit.',
             'Follow a consistent coding style',
             'Implement proper error handling and provide user-friendly error messages.',
             'Document all components and major functions, explaining their purpose and usage.',
-            'Aim for a high test coverage.'
+            'Aim for a 100% test coverage.'
         ]
 
         performance_evaluation = [
@@ -117,6 +115,7 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Constructively self-criticize your big-picture behavior constantly.",
             "Check if the first cli command is the cd to the project directory.",
             "Check if the full path is being used for all file/directories.",
+            "How many App.test.js files are there?",
             "Every step has a cost, so be smart and efficient. "
             "Aim to complete the app in the least number of steps."
         ]
@@ -125,9 +124,9 @@ class DevGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "thoughts": {
                 "text": "thought",
                 "reasoning": "reasoning",
-                "plan": "- short bulleted\n- list that conveys\n- long-term plan",
+                "plan": "- short bulleted\n- list that conveys\n- plan for this step",
+                "next": "- short bulleted\n- list that conveys\n- plan for next step",
                 "criticism": "constructive self-criticism",
-                "speak": "thoughts summary to say to user",
             },
             "command": {"name": "command name", "args": {"arg name": "value"}},
         }

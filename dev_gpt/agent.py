@@ -129,10 +129,10 @@ class DevGPTAgent:
                     log_file.write(f'Reasoning: {parsed["thoughts"]["reasoning"]}\n')
                     print(f'\033[92mPlan:\033[0m\n{parsed["thoughts"]["plan"]}')
                     log_file.write(f'Plan:\n{parsed["thoughts"]["plan"]}\n')
+                    print(f'\033[92mNext:\033[0m\n{parsed["thoughts"]["next"]}')
+                    log_file.write(f'Next:\n{parsed["thoughts"]["next"]}\n')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     log_file.write(f'Criticism: {parsed["thoughts"]["criticism"]}\n')
-                    print(f'\033[92mSpeak:\033[0m {parsed["thoughts"]["speak"]}')
-                    log_file.write(f'Speak: {parsed["thoughts"]["speak"]}\n')
                     if parsed["command"]["name"] == "read_file":
                         print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
                         log_file.write(f'Action: reading file {parsed["command"]["args"]["file_path"]}\n')
@@ -190,6 +190,8 @@ class DevGPTAgent:
             parsed_memory_to_add = [
                 f"Step: {loop_count}",
                 f"Thought: {parsed['thoughts']['text']}",
+                f'Plan:\n{parsed["thoughts"]["plan"]}'
+                f'Next:\n{parsed["thoughts"]["next"]}'
             ]
 
             if parsed["command"]["name"] == "read_file":
