@@ -112,14 +112,16 @@ class TddGPTAgent:
             print(f"\033[91mStep Number:\033[0m {loop_count}")
             log_file.write(f"Step Number: {loop_count}\n")
 
+            assistant_reply = assistant_reply.strip()
             try:
                 parsed = json.loads(assistant_reply, strict=False)
             except json.JSONDecodeError:
                 preprocessed_text = re.sub(r'(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})', r"\\\\", assistant_reply)
                 try:
                     parsed = json.loads(preprocessed_text, strict=False)
-                except Exception:
-                    print(assistant_reply)
+                except Exception as e:
+                    print(f"Exception occurred: {e}")
+                    print(preprocessed_text)
 
             if parsed:
                 try:
@@ -127,10 +129,10 @@ class TddGPTAgent:
                     log_file.write(f'Text: {parsed["thoughts"]["text"]}\n')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
                     log_file.write(f'Reasoning: {parsed["thoughts"]["reasoning"]}\n')
-                    print(f'\033[92mPlan:\033[0m\n{parsed["thoughts"]["plan"]}')
-                    log_file.write(f'Plan:\n{parsed["thoughts"]["plan"]}\n')
-                    print(f'\033[92mNext:\033[0m\n{parsed["thoughts"]["next"]}')
-                    log_file.write(f'Next:\n{parsed["thoughts"]["next"]}\n')
+                    print(f'\033[92mThis:\033[0m\n{parsed["thoughts"]["this_step_plan"]}')
+                    log_file.write(f'This Step Plan:\n{parsed["thoughts"]["this_step_plan"]}\n')
+                    print(f'\033[92mNext:\033[0m\n{parsed["thoughts"]["next_step_plan"]}')
+                    log_file.write(f'Next Step Plan:\n{parsed["thoughts"]["next_step_plan"]}\n')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     log_file.write(f'Criticism: {parsed["thoughts"]["criticism"]}\n')
                     if parsed["command"]["name"] == "read_file":
@@ -190,8 +192,8 @@ class TddGPTAgent:
             parsed_memory_to_add = [
                 f"Step: {loop_count}",
                 f"Thought: {parsed['thoughts']['text']}",
-                f'Plan:\n{parsed["thoughts"]["plan"]}'
-                f'Next:\n{parsed["thoughts"]["next"]}'
+                f'This Step Plan:\n{parsed["thoughts"]["this_step_plan"]}'
+                f'Next Step Plan:\n{parsed["thoughts"]["next_step_plan"]}'
             ]
 
             if parsed["command"]["name"] == "read_file":
