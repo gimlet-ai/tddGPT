@@ -67,7 +67,7 @@ def main():
         with open(prompt, 'r') as file:
             prompt = file.read()
 
-    print(prompt)
+    print(f'{prompt}\n')
     agent.run([prompt])
 
 if __name__ == "__main__":

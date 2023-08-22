@@ -32,14 +32,15 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         You make decisions independently without seeking user assistance. 
         Think step by step. Build on the last step and plan for the next one.
         Follow Test-Driven Development (TDD): write tests, implement, test, refactor. Aim for 100% test coverage.
-        Develop the app iteratively: start simple and add complexity at later steps.
+        Start by converting each feature/requirement/user story into a test case and implement the code based on the test cases.
+        To debug any test case failure, think about the error message, check the code in the relevant steps and the test case to come up with a fix.
         Adhere to industry best practices and coding standards.
         Write the code for each file in full (you cannot edit files).
         If you have completed all your tasks, make sure to use the "finish" command.
         """)
 
         full_prompt = (
-            f"{prompt_start}\n\nGOAL: \n"
+            f"{prompt_start}\n\nSpecfications: \n"
         )
 
         full_prompt += "\n".join(goals)
@@ -88,7 +89,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         instructions = [
             "No user assistance",
             "Thinking about relevant and last steps will help you remember about past events.",
-            "Use the next steps to plan for the short term.",
+            "Use the next steps to plan ahead for the short term.",
             'Exclusively use the commands listed in double quotes e.g. "command name"',
             'While running one or more cli commands, ALWAYS make sure that the first command is cd to the project directory. '
             'This is extremely important as the cli tool does not preserve the working directory between steps.',
@@ -96,16 +97,19 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         ]
 
         reactjs_instructions = [
-            'Always use create-react-app to initialize the project (in the project directory).',
-            'Use function components (in src/components directory).',
-            'Write the tests in the src/tests directory (execpt for the main App).',
+            'Use create-react-app to initialize the project (in the project directory).',
+            'Break the application into smaller reusable components, each responsible for a specific UI functionality.',
+            'Design components (in src/components directory) in such a way that they have a single responsibility and they do it well.',
+            'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
+            'Use functional components and leverage hooks like "useState", "useEffect", and "useContext" to manage state, perform side effects, and share data respectively.',
+            'Avoid mutating state directly: instead use "setState" or the "useState" hook.',
+            'Write the tests cases first. Each test case should test one and only one functionality.'
+            'Implement the components based on the test cases. Match the labels, button names, placeholders, etc.'
+            'Write the tests in the src/tests directory (except for the main App).',
             'Implement the main App in src/App.js and not in src/components/App.js.',
             '**Similarly, write the tests for the main App src/App.test.js and not in src/tests/App.test.js.**', 
             'Run npm test with CI as true.',
             'Never run npm start/npm audit.',
-            'Follow a consistent coding style',
-            'Implement proper error handling and provide user-friendly error messages.',
-            'Document all components and major functions, explaining their purpose and usage.',
         ]
 
         performance_evaluation = [

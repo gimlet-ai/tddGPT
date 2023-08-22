@@ -112,7 +112,13 @@ class TddGPTAgent:
             print(f"\033[91mStep Number:\033[0m {loop_count}")
             log_file.write(f"Step Number: {loop_count}\n")
 
-            assistant_reply = assistant_reply.strip()
+            start_index = assistant_reply.find('{')
+            end_index = assistant_reply.rfind('}')
+
+            if start_index != -1 and end_index != -1 and start_index < end_index:
+                extracted_assistant_reply = assistant_reply[start_index:end_index + 1]
+
+            assistant_reply = extracted_assistant_reply.strip()
             try:
                 parsed = json.loads(assistant_reply, strict=False)
             except json.JSONDecodeError:
@@ -122,11 +128,12 @@ class TddGPTAgent:
                 except Exception as e:
                     print(f"Exception occurred: {e}")
                     print(preprocessed_text)
+                    continue
 
             if parsed:
                 try:
-                    print(f'\033[92mText:\033[0m {parsed["thoughts"]["text"]}')
-                    log_file.write(f'Text: {parsed["thoughts"]["text"]}\n')
+                    print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
+                    log_file.write(f'Thought: {parsed["thoughts"]["text"]}\n')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
                     log_file.write(f'Reasoning: {parsed["thoughts"]["reasoning"]}\n')
                     print(f'\033[92mThis:\033[0m\n{parsed["thoughts"]["this_step_plan"]}')
@@ -139,17 +146,17 @@ class TddGPTAgent:
                         print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
                         log_file.write(f'Action: reading file {parsed["command"]["args"]["file_path"]}\n')
                     elif parsed["command"]["name"] == "write_file":
-                        print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}\n')
+                        print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}')
                         log_file.write(f'Action: writing file {parsed["command"]["args"]["file_path"]}\n')
-                        print(f"{parsed['command']['args']['text']}\n")
-                        log_file.write(f"{parsed['command']['args']['text']}\n")
                     elif parsed["command"]["name"] == "cli":
                         commands = parsed['command']['args']['commands']
-                        command_str = "\n".join(commands) if isinstance(commands, list) else commands
-                        print(f'\033[92mAction:\033[0m executing cli commands\n' + command_str + "\n")
-                        log_file.write(f'Action: executing cli commands\n' + command_str + "\n")
+                        command_str = " && ".join(commands) if isinstance(commands, list) else commands
+                        print(f"\033[92mAction:\033[0m executing cli commands\n{command_str}\n")
+                        log_file.write(f'Action: executing cli commands\n```\n{command_str}\n```\n')
                 except KeyError as e:
                   print(f"Missing key: {e}")
+                  print(assistant_reply)
+                  continue
 
             self.chat_history_memory.add_message(HumanMessage(content=user_input))
             self.chat_history_memory.add_message(AIMessage(content=json.dumps(parsed)))
@@ -178,9 +185,6 @@ class TddGPTAgent:
 
                 result = f"The {tool.name} tool returned: {summarized_observation}"
 
-                print(f'\033[92mResult:\033[0m {result}\n')
-                log_file.write(f'Result: {result}\n\n')
-
             elif action.name == "ERROR":
                 result = f"Error: {action.args}. "
             else:
@@ -192,21 +196,27 @@ class TddGPTAgent:
             parsed_memory_to_add = [
                 f"Step: {loop_count}",
                 f"Thought: {parsed['thoughts']['text']}",
-                f'This Step Plan:\n{parsed["thoughts"]["this_step_plan"]}'
+                f'This Step Plan:\n{parsed["thoughts"]["this_step_plan"]}\n'
                 f'Next Step Plan:\n{parsed["thoughts"]["next_step_plan"]}'
             ]
 
             if parsed["command"]["name"] == "read_file":
+                print(f'\033[92mCode:\033[0m\n{observation}\n')
+                log_file.write(f"Code:\n```\n{observation}\n```\n\n")
                 parsed_memory_to_add.append(f"Action: reading file {parsed['command']['args']['file_path']}")
-                parsed_memory_to_add.append(f"Code:\n{observation}")
+                parsed_memory_to_add.append(f"Code:\n```\n{observation}\n```")
             elif parsed["command"]["name"] == "write_file":
                 parsed_memory_to_add.append(f"Action: writing file {parsed['command']['args']['file_path']}")
-                parsed_memory_to_add.append(f"Code:\n{parsed['command']['args']['text']}")
+                parsed_memory_to_add.append(f"Code:\n```\n{parsed['command']['args']['text']}\n```")
+                print(f'\033[92mCode:\033[0m\n{parsed["command"]["args"]["text"]}\n')
+                log_file.write(f"Code:\n```\n{parsed['command']['args']['text']}\n```\n\n")
             elif parsed["command"]["name"] == "cli":
                 commands = parsed['command']['args']['commands']
                 command_str = " && ".join(commands) if isinstance(commands, list) else commands
-                parsed_memory_to_add.append(f"Action: executing cli commands '{command_str}'")
+                parsed_memory_to_add.append(f"Action: executing cli commands\n```\n{command_str}\n```\n")
                 parsed_memory_to_add.append(f"Result:\n{summarized_observation}")
+                print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
+                log_file.write(f"Result:\n{summarized_observation}\n\n")
 
             memory_to_add = '\n'.join(parsed_memory_to_add)
 
@@ -221,4 +231,3 @@ class TddGPTAgent:
 
             self.memory.add_documents([Document(page_content=memory_to_add)])
             self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add}))
-
