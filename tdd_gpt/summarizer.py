@@ -8,8 +8,9 @@ from langchain.chains import StuffDocumentsChain, LLMChain
 import textwrap
 
 class TextSummarizer:
-    CLI_TEMPLATE = textwrap.dedent("""Please summarize it as concisely as possible and highlight the result. 
-            For npm test output, describe the error in detail including the file name, line number and code snippets.
+    CLI_TEMPLATE = textwrap.dedent("""Please summarize it and highlight the result. 
+            For npm test output, describe the error in detail including the file name, line number
+            and the code snippet where the error was occurred. Include any clues which may help in debugging.
             Ignore any suggestions, warnings, security vulnerabilities, dependency/audit issues. 
             Start with 'The commands <status> ' where status is succeded/failed.""")
 
