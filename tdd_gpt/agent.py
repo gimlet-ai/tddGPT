@@ -115,6 +115,7 @@ class TddGPTAgent:
             start_index = assistant_reply.find('{')
             end_index = assistant_reply.rfind('}')
 
+            extracted_assistant_reply = assistant_reply.strip()
             if start_index != -1 and end_index != -1 and start_index < end_index:
                 extracted_assistant_reply = assistant_reply[start_index:end_index + 1]
 
@@ -133,26 +134,18 @@ class TddGPTAgent:
             if parsed:
                 try:
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
-                    log_file.write(f'Thought: {parsed["thoughts"]["text"]}\n')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
-                    log_file.write(f'Reasoning: {parsed["thoughts"]["reasoning"]}\n')
                     print(f'\033[92mThis:\033[0m\n{parsed["thoughts"]["this_step_plan"]}')
-                    log_file.write(f'This Step Plan:\n{parsed["thoughts"]["this_step_plan"]}\n')
                     print(f'\033[92mNext:\033[0m\n{parsed["thoughts"]["next_step_plan"]}')
-                    log_file.write(f'Next Step Plan:\n{parsed["thoughts"]["next_step_plan"]}\n')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
-                    log_file.write(f'Criticism: {parsed["thoughts"]["criticism"]}\n')
                     if parsed["command"]["name"] == "read_file":
                         print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
-                        log_file.write(f'Action: reading file {parsed["command"]["args"]["file_path"]}\n')
                     elif parsed["command"]["name"] == "write_file":
                         print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}')
-                        log_file.write(f'Action: writing file {parsed["command"]["args"]["file_path"]}\n')
                     elif parsed["command"]["name"] == "cli":
                         commands = parsed['command']['args']['commands']
                         command_str = " && ".join(commands) if isinstance(commands, list) else commands
                         print(f"\033[92mAction:\033[0m executing cli commands\n{command_str}\n")
-                        log_file.write(f'Action: executing cli commands\n```\n{command_str}\n```\n')
                 except KeyError as e:
                   print(f"Missing key: {e}")
                   print(assistant_reply)
@@ -193,32 +186,30 @@ class TddGPTAgent:
                     f"Please refer to the 'COMMANDS' list for available "
                 )
 
-            parsed_memory_to_add = [
-                f"Step: {loop_count}",
-                f"Thought: {parsed['thoughts']['text']}",
-                f'This Step Plan:\n{parsed["thoughts"]["this_step_plan"]}\n'
-                f'Next Step Plan:\n{parsed["thoughts"]["next_step_plan"]}'
-            ]
+            parsed_memory_to_add = {
+                "Step": loop_count,
+                "Thought": parsed['thoughts']['text'],
+                "This Step Plan": f'{parsed["thoughts"]["this_step_plan"]}',
+                "Next Step Plan": f'{parsed["thoughts"]["next_step_plan"]}"'
+            }
 
             if parsed["command"]["name"] == "read_file":
                 print(f'\033[92mCode:\033[0m\n{observation}\n')
-                log_file.write(f"Code:\n```\n{observation}\n```\n\n")
-                parsed_memory_to_add.append(f"Action: reading file {parsed['command']['args']['file_path']}")
-                parsed_memory_to_add.append(f"Code:\n```\n{observation}\n```")
+                parsed_memory_to_add["Action"] = f"reading file {parsed['command']['args']['file_path']}"
+                parsed_memory_to_add["Code"] = f"\n```\n{observation}\n```"
             elif parsed["command"]["name"] == "write_file":
-                parsed_memory_to_add.append(f"Action: writing file {parsed['command']['args']['file_path']}")
-                parsed_memory_to_add.append(f"Code:\n```\n{parsed['command']['args']['text']}\n```")
+                parsed_memory_to_add["Action"] = f"writing file {parsed['command']['args']['file_path']}"
+                parsed_memory_to_add["Code"] = f"\n```\n{parsed['command']['args']['text']}\n```"
                 print(f'\033[92mCode:\033[0m\n{parsed["command"]["args"]["text"]}\n')
-                log_file.write(f"Code:\n```\n{parsed['command']['args']['text']}\n```\n\n")
             elif parsed["command"]["name"] == "cli":
                 commands = parsed['command']['args']['commands']
                 command_str = " && ".join(commands) if isinstance(commands, list) else commands
-                parsed_memory_to_add.append(f"Action: executing cli commands\n```\n{command_str}\n```\n")
-                parsed_memory_to_add.append(f"Result:\n{summarized_observation}")
+                parsed_memory_to_add["Action"] = f"executing cli commands: {command_str}"
+                parsed_memory_to_add["Result"] = summarized_observation
                 print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
-                log_file.write(f"Result:\n{summarized_observation}\n\n")
 
-            memory_to_add = '\n'.join(parsed_memory_to_add)
+            log_file.write(json.dumps(parsed_memory_to_add))
+            memory_to_add = '\n'.join([f'{k}: {v}' for k, v in parsed_memory_to_add.items()])
 
             if self.feedback_tool is not None:
                 feedback = f"\n{self.feedback_tool.run('Input: ')}"
