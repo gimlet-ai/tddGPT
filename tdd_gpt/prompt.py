@@ -115,6 +115,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Constructively self-criticize your big-picture behavior constantly.",
             "Check if the first cli command is the cd to the project directory.",
             "Check if the full path is being used for all file/directories.",
+            "Do the tests match the components?",
+            "How many App.test files are there?",
             "Every step has a cost, so be smart and efficient. "
             "Aim to complete the app in the least number of steps."
         ]
