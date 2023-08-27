@@ -88,7 +88,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         instructions = [
             "No user assistance",
             "Thinking about relevant and last steps will help you remember about past events.",
-            "Plan for the long term using the next step plan. Look the last step's next step plan to come up with this step's plan.",
+            "Use next step plan to plan for the long term and follow it in each step.",
             'While running one or more cli commands, ALWAYS make sure that the first command is cd to the project directory. '
             'This is extremely important as the cli tool does not preserve the working directory between steps.',
             'Always use the full path to read/write any file or directory.',
@@ -100,6 +100,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'Break the application into smaller reusable components, each responsible for a specific UI functionality.',
             'Design components in such a way that they have a single responsibility and they do it well.',
             'For each component, write the tests first. Then implement the code based on the tests. Start with the main App.',
+            '**Use the same props, labels, placeholders, buttons, objects, data attributes, variables, etc. between the unit tests and the component so that the tests do not fail unnecessarily.**',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
             'Avoid mutating state directly: instead use "setState" or the "useState" hook.',
@@ -114,8 +115,6 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Constructively self-criticize your big-picture behavior constantly.",
             "Check if the first cli command is the cd to the project directory.",
             "Check if the full path is being used for all file/directories.",
-            "How many App.test files are there?",
-            "Are you matching the unit tests with the code?",
             "Every step has a cost, so be smart and efficient. "
             "Aim to complete the app in the least number of steps."
         ]
@@ -140,7 +139,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         prompt_string = (
             f"Instructions:\n{instructions_str}\n\n"
-            f"For ReactJS Projects:\n{reactjs_instructions_str}\n\n"
+            f"Reactjs Instructions:\n{reactjs_instructions_str}\n\n"
             f"Commands:\n{commands_str}\n\n"
             f"Performance Evaluation:\n{performance_evaluation_str}\n\n"
             f"Response Format:\n{formatted_response_format}\n\n"

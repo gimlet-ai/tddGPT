@@ -20,7 +20,7 @@ class TextSummarizer:
             Start with '- I successfully executed the <command> ' """)
 
     def __init__(self, summary_type: str):
-        llm = ChatOpenAI(temperature=0.8, model_name="gpt-3.5-turbo-16k")
+        llm = ChatOpenAI(temperature=0.2, model_name="gpt-3.5-turbo-16k")
 
         # Define the prompt based on the summary_type
         prompt_template = self.get_prompt_template(summary_type)
