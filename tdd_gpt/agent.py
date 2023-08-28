@@ -135,8 +135,8 @@ class TddGPTAgent:
                 try:
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
-                    print(f'\033[92mThis:\033[0m\n{parsed["thoughts"]["this_step_plan"]}')
-                    print(f'\033[92mNext:\033[0m\n{parsed["thoughts"]["next_step_plan"]}')
+                    print(f'\033[92mPlan:\033[0m\n{parsed["thoughts"]["plan"]}')
+                    print(f'\033[92mTodos:\033[0m\n{parsed["thoughts"]["todos"]}')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     if parsed["command"]["name"] == "read_file":
                         print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
@@ -189,8 +189,8 @@ class TddGPTAgent:
             parsed_memory_to_add = {
                 "Step": loop_count,
                 "Thought": parsed['thoughts']['text'],
-                "This Step Plan": f'{parsed["thoughts"]["this_step_plan"]}',
-                "Next Step Plan": f'{parsed["thoughts"]["next_step_plan"]}"'
+                "Plan": f'\n{parsed["thoughts"]["plan"]}',
+                "Todos": f'\n{parsed["thoughts"]["todos"]}'
             }
 
             if parsed["command"]["name"] == "read_file":
