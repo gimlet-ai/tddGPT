@@ -30,8 +30,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         As an experienced Full Stack Web Developer, your task is to build apps as per the specifications using the TDD method.
         You are working on a {os_name} machine and the current working directory is {os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.
         You make decisions independently without seeking user assistance. 
-        Start by analysing the specs and design the application. Write it to a markdown file.
-        Think step by step. Build on the last step and plan ahead based on the initial design.
+        Think step by step. Start by analysing the specs and design the application. Plan the steps and write it to a markdown file.
+        At each step, build on the last step. Use todos to plan ahead. Stick to the initial desgin.
         Write the code for each file in full (you cannot edit files).
         If you have completed all your tasks, make sure to use the "finish" command.
         """)
@@ -55,7 +55,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         memory: VectorStoreRetriever = kwargs["memory"]
         previous_messages = kwargs["messages"]
         relevant_docs = memory.get_relevant_documents(str(previous_messages[-10:]))
-        relevant_memory = [d.page_content for d in relevant_docs]
+        relevant_memory = [d.page_content[d.page_content.find('```'):].strip() for d in relevant_docs if 'Code:' in d.page_content]
         relevant_memory_tokens = sum([self.token_counter(doc) for doc in relevant_memory])
 
         # Get the last system message
@@ -74,7 +74,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             relevant_memory_tokens = sum([self.token_counter(doc) for doc in relevant_memory])
 
         relevant_memory_str = "\n\n".join(relevant_memory) if len(relevant_memory) > 0 else "None"
-        memory_content = f"Relevant Steps:\n>>>>\n{relevant_memory_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
+        memory_content = f"Code Context:\n>>>>\n{relevant_memory_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
 
         full_prompt = base_prompt.content + memory_content
 
@@ -85,8 +85,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
     def get_prompt(self, tools: List[BaseTool]) -> str:
         instructions = [
             "No user assistance",
-            "Thinking about relevant and last steps will help you remember about past events.",
-            "Use todos to plan for the long term and review it at each step.",
+            "Follow the todos mentioned in the last step to stick to the long term plan at each step.",
             "Follow industry standard best practices and coding standards.",
             'While running one or more cli commands, ALWAYS make sure that the first command is cd to the project directory. '
             'This is extremely important as the cli tool does not preserve the working directory between steps.',
@@ -99,10 +98,12 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'Break the application into smaller reusable components, each responsible for a specific UI functionality.',
             'Design components in such a way that they have a single responsibility and they do it well.',
             'For each component, write the unit tests first. Then implement the code based on the tests and run the test. Start with the main App.',
+            'While implementing the component, refer to the Code Context section for relevant code.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
             'Avoid mutating state directly: instead use "setState" or the "useState" hook.',
             '**Use consistent names for props, labels, placeholders, buttons, objects, attributes, etc. across the tests and components.**',
+            'While debugging test failures, refer to the code available in the Code Context section to come up with a fix.',
             'If a test fails, check if test accurately reflects the structure and functionality of the component. Rewrite it otherwise.',
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',

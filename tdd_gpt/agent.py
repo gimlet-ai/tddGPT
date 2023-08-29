@@ -196,10 +196,10 @@ class TddGPTAgent:
             if parsed["command"]["name"] == "read_file":
                 print(f'\033[92mCode:\033[0m\n{observation}\n')
                 parsed_memory_to_add["Action"] = f"reading file {parsed['command']['args']['file_path']}"
-                parsed_memory_to_add["Code"] = f"\n```\n{observation}\n```"
+                parsed_memory_to_add["Code"] = f"\n```\n//{parsed['command']['args']['file_path']}\n{observation}\n```"
             elif parsed["command"]["name"] == "write_file":
                 parsed_memory_to_add["Action"] = f"writing file {parsed['command']['args']['file_path']}"
-                parsed_memory_to_add["Code"] = f"\n```\n{parsed['command']['args']['text']}\n```"
+                parsed_memory_to_add["Code"] = f"\n```\n//{parsed['command']['args']['file_path']}\n{parsed['command']['args']['text']}\n```"
                 print(f'\033[92mCode:\033[0m\n{parsed["command"]["args"]["text"]}\n')
             elif parsed["command"]["name"] == "cli":
                 commands = parsed['command']['args']['commands']
