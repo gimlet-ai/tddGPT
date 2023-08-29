@@ -9,9 +9,9 @@ import textwrap
 
 class TextSummarizer:
     CLI_TEMPLATE = textwrap.dedent("""Please summarize it and highlight the result. 
-            For any npm test errors, describe test case, the error (including console.error) message 
-            the file name, line number and the code snippet which caused the test to fail. 
-            Include any suggestions which may help in debugging.
+            For any npm test errors, include the test case name, error message (including console.error) 
+            file name, line number and code snippet which caused the failure. 
+            Also include the stats.
             Ignore any warnings, security vulnerabilities, dependency/audit issues. 
             Start with 'The commands <status> ' where status is succeded/failed.""")
 

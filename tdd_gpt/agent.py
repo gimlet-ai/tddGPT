@@ -135,8 +135,8 @@ class TddGPTAgent:
                 try:
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
-                    print(f'\033[92mPlan:\033[0m\n{parsed["thoughts"]["plan"]}')
-                    print(f'\033[92mTodos:\033[0m\n{parsed["thoughts"]["todos"]}')
+                    print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
+                    print(f'\033[92mTBD:\033[0m\n{parsed["thoughts"]["tbd"]}')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     if parsed["command"]["name"] == "read_file":
                         print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
@@ -189,17 +189,17 @@ class TddGPTAgent:
             parsed_memory_to_add = {
                 "Step": loop_count,
                 "Thought": parsed['thoughts']['text'],
-                "Plan": f'\n{parsed["thoughts"]["plan"]}',
-                "Todos": f'\n{parsed["thoughts"]["todos"]}'
+                "Plan": f'{parsed["thoughts"]["plan"]}',
+                "TBD": f'\n{parsed["thoughts"]["tbd"]}'
             }
 
             if parsed["command"]["name"] == "read_file":
                 print(f'\033[92mCode:\033[0m\n{observation}\n')
                 parsed_memory_to_add["Action"] = f"reading file {parsed['command']['args']['file_path']}"
-                parsed_memory_to_add["Code"] = f"\n```\n//{parsed['command']['args']['file_path']}\n{observation}\n```"
+                parsed_memory_to_add["Code"] = f"\n```\n// {parsed['command']['args']['file_path']}\n{observation}\n```"
             elif parsed["command"]["name"] == "write_file":
                 parsed_memory_to_add["Action"] = f"writing file {parsed['command']['args']['file_path']}"
-                parsed_memory_to_add["Code"] = f"\n```\n//{parsed['command']['args']['file_path']}\n{parsed['command']['args']['text']}\n```"
+                parsed_memory_to_add["Code"] = f"\n```\n// {parsed['command']['args']['file_path']}\n{parsed['command']['args']['text']}\n```"
                 print(f'\033[92mCode:\033[0m\n{parsed["command"]["args"]["text"]}\n')
             elif parsed["command"]["name"] == "cli":
                 commands = parsed['command']['args']['commands']

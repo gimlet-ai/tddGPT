@@ -29,9 +29,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         prompt_start = textwrap.dedent(f"""
         As an experienced Full Stack Web Developer, your task is to build apps as per the specifications using the TDD method.
         You are working on a {os_name} machine and the current working directory is {os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.
-        You make decisions independently without seeking user assistance. 
-        Think step by step. Start by analysing the specs and design the application. Plan the steps and write it to a markdown file.
-        At each step, build on the last step. Use todos to plan ahead. Stick to the initial desgin.
+        Start by analysing the specs and design the application. Save it to a markdown file.
+        Think step by step. Use tbd to plan ahead and follow it at each step.
         Write the code for each file in full (you cannot edit files).
         If you have completed all your tasks, make sure to use the "finish" command.
         """)
@@ -85,8 +84,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
     def get_prompt(self, tools: List[BaseTool]) -> str:
         instructions = [
             "No user assistance",
-            "Follow the todos mentioned in the last step to stick to the long term plan at each step.",
             "Follow industry standard best practices and coding standards.",
+            "Before reading a file, check if it's already available in the Code Context section.",
             'While running one or more cli commands, ALWAYS make sure that the first command is cd to the project directory. '
             'This is extremely important as the cli tool does not preserve the working directory between steps.',
             'Always use the full path to read/write any file or directory.',
@@ -97,14 +96,13 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'Use create-react-app to initialize the project (in the project directory).',
             'Break the application into smaller reusable components, each responsible for a specific UI functionality.',
             'Design components in such a way that they have a single responsibility and they do it well.',
-            'For each component, write the unit tests first. Then implement the code based on the tests and run the test. Start with the main App.',
-            'While implementing the component, refer to the Code Context section for relevant code.',
+            'For each component, write the unit tests first. Then implement the code based on the tests (available in last step) so that the tests pass. Start with the main App.',
+            'While implementing components, review the tests (available in the Code Context section) and match the name of props, labels, placeholders, buttons, attributes, etc.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
             'Avoid mutating state directly: instead use "setState" or the "useState" hook.',
-            '**Use consistent names for props, labels, placeholders, buttons, objects, attributes, etc. across the tests and components.**',
-            'While debugging test failures, refer to the code available in the Code Context section to come up with a fix.',
-            'If a test fails, check if test accurately reflects the structure and functionality of the component. Rewrite it otherwise.',
+            'While debugging test failures, think about the error message and review the code available in the Code Context section to come up with a fix.',
+            'Ensure that the tests accurately reflect the structure and functionality of the component.',
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',
             'Run npm test with CI as true. Never run npm start/npm audit.',
@@ -116,8 +114,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Constructively self-criticize your short term plan constantly.",
             "Check if the first cli command is the cd to the project directory.",
             "Check if the full path is being used for all file/directories.",
-            "Do the tests match the respective code?",
             "How many App.test files are there?",
+            "Constantly review the code available in the Code Context.",
             "Every step has a cost, so be smart and efficient. "
             "Aim to complete the app in the least number of steps."
         ]
@@ -126,8 +124,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "thoughts": {
                 "text": "thought",
                 "reasoning": "reasoning",
-                "plan": "- short bulleted\n- list that conveys\n- plan for this step",
-                "todos": "- bulleted\n- list that conveys\n- long term plan",
+                "plan": "plan for this step based on tbd of last step",
+                "tbd": "- bulleted list of\n- things to be done\n- in future steps",
                 "criticism": "constructive self-criticism",
             },
             "command": {"name": "command name", "args": {"arg name": "value"}},
