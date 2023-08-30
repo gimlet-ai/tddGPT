@@ -146,7 +146,7 @@ class TddGPTAgent:
                     elif parsed["command"]["name"] == "cli":
                         commands = parsed['command']['args']['commands']
                         command_str = " && ".join(commands) if isinstance(commands, list) else commands
-                        print(f"\033[92mAction:\033[0m executing cli commands\n{command_str}\n")
+                        print(f"\033[92mAction:\033[0m executing cli commands '{command_str}'\n")
                 except KeyError as e:
                   print(f"Missing key: {e}")
                   print(assistant_reply)
@@ -175,7 +175,10 @@ class TddGPTAgent:
                         f"Error: {str(e)}, {type(e).__name__}, args: {action.args}"
                     )
 
-                summarized_observation = self.summarize_text(observation) if action.name == "cli" else observation
+                if action.name == "cli":
+                    summarized_observation = self.summarize_text(f"Command executed: {command_str}\nOutput:\n{observation}")
+                else:
+                    summarized_observation = observation
 
                 result = f"The {tool.name} tool returned: {summarized_observation}"
 
@@ -188,7 +191,7 @@ class TddGPTAgent:
                 )
 
             parsed_memory_to_add = {
-                "Step": loop_count,
+                "Step #": loop_count,
                 "Thought": parsed['thoughts']['text'],
                 "Done": parsed['thoughts']['done'],
                 "Plan": f'{parsed["thoughts"]["plan"]}',
