@@ -11,10 +11,12 @@ class TextSummarizer:
     CLI_TEMPLATE = textwrap.dedent("""Summarize the output in the following format.
 
             <format>
-            The commands <succeded/failed> with the message <summary>.
+            The commands <succeded/failed> with the message <output summary>.
             </format>
 
-            For 'npm test' output, summarize each test failure in the following format.
+            If, **and only if**, the output is from an 'npm test' command, follow the instructions below to summarize instead.
+                                   
+            Summarize each test failure in the following format.
 
             <format>
             Test Case: <test case description>
@@ -26,7 +28,12 @@ class TextSummarizer:
             ```
             </format>
 
-            Add the pass/fail stats once in the end.
+            Include test stats at the end (only once) in the following format. 
+
+            <format>
+            <num> tests failed out of <num> total tests
+            </format>
+            
             Ignore any warnings, security vulnerabilities, dependency/audit issues. 
             """)
 
