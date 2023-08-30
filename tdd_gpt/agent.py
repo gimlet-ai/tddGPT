@@ -135,6 +135,7 @@ class TddGPTAgent:
                 try:
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
+                    print(f'\033[92mDone:\033[0m {parsed["thoughts"]["done"]}')
                     print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
                     print(f'\033[92mTBD:\033[0m\n{parsed["thoughts"]["tbd"]}')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
@@ -189,6 +190,7 @@ class TddGPTAgent:
             parsed_memory_to_add = {
                 "Step": loop_count,
                 "Thought": parsed['thoughts']['text'],
+                "Done": parsed['thoughts']['done'],
                 "Plan": f'{parsed["thoughts"]["plan"]}',
                 "TBD": f'\n{parsed["thoughts"]["tbd"]}'
             }
