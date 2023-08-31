@@ -57,11 +57,21 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         previous_messages = kwargs["messages"]
 
         # Extract code context from previous system messages
-        code_context = [m.additional_kwargs.get("code", "") for m in reversed(previous_messages) if isinstance(m, SystemMessage) and "code" in m.additional_kwargs]
+        code_context = [
+            m.additional_kwargs.get("code", "") 
+            for m in reversed(previous_messages) 
+            if isinstance(m, SystemMessage) 
+            and "code" in m.additional_kwargs 
+            and m.additional_kwargs.get("code", "").strip() != ""
+        ]
         code_context_tokens = sum([self.token_counter(code) for code in code_context])
 
         # Get the last system message
-        last_system_message = next((m for m in reversed(previous_messages) if isinstance(m, SystemMessage) and m.additional_kwargs.get("metadata")), None)
+        last_system_message = next((
+            m for m in reversed(previous_messages) 
+            if isinstance(m, SystemMessage) 
+            and m.additional_kwargs.get("metadata")
+        ), None)
 
         # Extract the last step from metadata if available
         last_step = last_system_message.additional_kwargs.get("metadata") if last_system_message else "None"
@@ -101,8 +111,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'Use create-react-app to initialize the project (in the project directory).',
             'Break the application into smaller reusable components, each responsible for a specific UI functionality.',
             'Design components in such a way that they have a single responsibility and they do it well.',
-            'For each component, write the unit tests first. Then write the code in such a way that the tests pass. Start with the main App.',
-            '**While implementing components, match the names of props/labels/placeholders/buttons/testids etc. with the tests.**',
+            'For each component, write the unit tests first. Then write the code so that the tests pass. Start with the main App.',
+            '**While implementing components, match the names of props/labels/placeholders/buttons/testids with the tests.**',
             'Ensure that the tests accurately reflect the structure and functionality of the components.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
@@ -120,7 +130,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Check if the first cli command is the cd to the project directory.",
             "Check if the full path is being used for all file/directories.",
             "How many App.test files are there?",
-            "Review the Code Context at each step to prevent any mismatch between the tests and the code?",
+            "Is there a mismatch between the tests and the code?",
             "Every step has a cost, so be smart and efficient. "
             "Aim to complete the app in the least number of steps."
         ]
