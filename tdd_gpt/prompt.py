@@ -45,17 +45,20 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         return full_prompt
 
     def format_messages(self, **kwargs: Any) -> List[BaseMessage]:
+        # Create the base prompt
         base_prompt = SystemMessage(content=self.construct_full_prompt(kwargs["goals"]))
         used_tokens = self.token_counter(base_prompt.content)
 
+        # Get user input and its tokens
         user_input = kwargs["user_input"]
         input_message_tokens = self.token_counter(user_input)
 
-        memory: VectorStoreRetriever = kwargs["memory"]
+        # Get previous messages
         previous_messages = kwargs["messages"]
-        relevant_docs = memory.get_relevant_documents(str(previous_messages[-10:]))
-        relevant_memory = [d.page_content[d.page_content.find('```'):].strip() for d in relevant_docs if 'Code:' in d.page_content]
-        relevant_memory_tokens = sum([self.token_counter(doc) for doc in relevant_memory])
+
+        # Extract code context from previous system messages
+        code_context = [m.additional_kwargs.get("code", "") for m in reversed(previous_messages) if isinstance(m, SystemMessage) and "code" in m.additional_kwargs]
+        code_context_tokens = sum([self.token_counter(code) for code in code_context])
 
         # Get the last system message
         last_system_message = next((m for m in reversed(previous_messages) if isinstance(m, SystemMessage) and m.additional_kwargs.get("metadata")), None)
@@ -67,16 +70,18 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         # Calculate the available tokens, considering the last step
         available_tokens = self.send_token_limit - used_tokens - input_message_tokens - last_step_tokens
 
-        # Fit as much relevant memory as possible based on available tokens
-        while relevant_memory_tokens > available_tokens:
-            relevant_memory = relevant_memory[-1:]
-            relevant_memory_tokens = sum([self.token_counter(doc) for doc in relevant_memory])
+        # Fit as much code context as possible based on available tokens
+        while code_context_tokens > available_tokens:
+            code_context = code_context[-1:]
+            code_context_tokens = sum([self.token_counter(code) for code in code_context])
 
-        relevant_memory_str = "\n\n".join(relevant_memory) if len(relevant_memory) > 0 else "None"
-        memory_content = f"Code Context:\n>>>>\n{relevant_memory_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
+        code_context_str = "\n".join(code_context) if len(code_context) > 0 else "None"
+        code_content = f"Code Context:\n>>>>\n{code_context_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
 
-        full_prompt = base_prompt.content + memory_content
+        # Compile the full prompt
+        full_prompt = base_prompt.content + code_content
 
+        # Create a list of messages
         messages: List[BaseMessage] = [SystemMessage(content=full_prompt), HumanMessage(content=user_input)]
 
         return messages
@@ -96,7 +101,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'Use create-react-app to initialize the project (in the project directory).',
             'Break the application into smaller reusable components, each responsible for a specific UI functionality.',
             'Design components in such a way that they have a single responsibility and they do it well.',
-            'For each component, write the unit tests first. Then write the code so that the tests pass. Start with the main App.',
+            'For each component, write the unit tests first. Then write the code in such a way that the tests pass. Start with the main App.',
             '**While implementing components, match the names of props/labels/placeholders/buttons/testids etc. with the tests.**',
             'Ensure that the tests accurately reflect the structure and functionality of the components.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
@@ -115,7 +120,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Check if the first cli command is the cd to the project directory.",
             "Check if the full path is being used for all file/directories.",
             "How many App.test files are there?",
-            "Is there a mismatch between the tests and the code?",
+            "Review the Code Context at each step to prevent any mismatch between the tests and the code?",
             "Every step has a cost, so be smart and efficient. "
             "Aim to complete the app in the least number of steps."
         ]
