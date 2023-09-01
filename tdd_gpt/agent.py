@@ -83,8 +83,8 @@ class TddGPTAgent:
 
     def run(self, goals: List[str]) -> str:
         user_input = (
-            "Determine which next command to use, "
-            "and respond using the format specified above:"
+            "You are at the first step. Determine which next command to use, "
+            "and respond using the json format as specified in Response Format section."
         )
 
         # Interaction Loop
@@ -110,7 +110,6 @@ class TddGPTAgent:
             )
 
             print(f"\033[91mStep Number:\033[0m {loop_count}")
-            log_file.write(f"Step Number: {loop_count}\n")
 
             start_index = assistant_reply.find('{')
             end_index = assistant_reply.rfind('}')
@@ -129,6 +128,11 @@ class TddGPTAgent:
                 except Exception as e:
                     print(f"Exception occurred: {e}")
                     print(preprocessed_text)
+                    user_input = (
+                        f"{assistant_reply}\n"
+                        f"The response is not a valid json. Determine the next step "
+                        f"and respond using the json format as specified in Response Format section:"
+                    )
                     continue
 
             if parsed:
@@ -147,6 +151,11 @@ class TddGPTAgent:
                 except KeyError as e:
                   print(f"Missing key: {e}")
                   print(assistant_reply)
+                  user_input = (
+                      f"{assistant_reply}\n"
+                      f"The response is missing the key '{e}'. Determine the next step "
+                      f"and respond using the json format as specified in Response Forwat section."
+                  )
                   continue
 
             self.chat_history_memory.add_message(HumanMessage(content=user_input))
@@ -188,8 +197,10 @@ class TddGPTAgent:
                 )
 
             parsed_memory_to_add = {
-                "Step No": loop_count,
+                "Step": loop_count,
                 "Thought": parsed['thoughts']['text'],
+                "Reasoning": parsed['thoughts']['reasoning'],
+                "Criticism": parsed['thoughts']['criticism'],
                 "Done": parsed['thoughts']['done'],
                 "Plan": f'{parsed["thoughts"]["plan"]}',
                 "TBD": f'\n{parsed["thoughts"]["tbd"]}',
@@ -215,8 +226,8 @@ class TddGPTAgent:
                 parsed_memory_to_add["Result"] = summarized_observation
 
                 print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
+                log_file.write(json.dumps(parsed_memory_to_add))
 
-            log_file.write(json.dumps(parsed_memory_to_add))
             memory_to_add = '\n'.join([f'{k}: {v}' for k, v in parsed_memory_to_add.items()])
 
             if self.feedback_tool is not None:
@@ -230,3 +241,8 @@ class TddGPTAgent:
 
             self.memory.add_documents([Document(page_content=memory_to_add)])
             self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add, 'code': code_str}))
+
+            user_input = (
+                f"You have suffessfully completed step {loop_count}. Good job! Determine the next step "
+                f"and respond using the json format as specified in Response Format section."
+            )
