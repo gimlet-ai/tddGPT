@@ -58,10 +58,11 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         # Extract code context from previous system messages
         code_context = [
-            m.additional_kwargs.get("code", "") 
+            m.additional_kwargs["code"]
             for m in reversed(previous_messages) 
             if isinstance(m, SystemMessage) 
             and "code" in m.additional_kwargs 
+            and len(m.additional_kwargs['code'].strip()) > 0
         ]
         code_context_tokens = sum([self.token_counter(code) for code in code_context])
 
@@ -112,7 +113,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'Break the application into smaller reusable components, each responsible for a specific UI functionality.',
             'Design components in such a way that they have a single responsibility and they do it well.',
             'For each component, write the unit tests first. Then write the code so that the tests pass. Start with the main App.',
-            '**While implementing components, match the names of props/labels/placeholders/buttons/testids with the tests.**',
+            "Avoid using 'data-testid' attributes for testing; instead use the query functions of React Testing library."
+            "**While implementing components, match the names of props/labels/placeholders/buttons with the tests.**",
             'Ensure that the tests accurately reflect the structure and functionality of the components.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
@@ -121,6 +123,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',
             'Run npm test with CI as true. Never run npm start/npm audit.',
+            "Use App.css styles to make the app look pretty and import it into the main App.",
         ]
 
         performance_evaluation = [

@@ -104,7 +104,7 @@ class TddGPTAgent:
                 if inside_console_error_block:
                     inside_console_details = True
             
-            elif "TestingLibraryElementError:" in line or "ReferenceError:" in line or "TypeError:" in line:
+            elif "Error: " in line:
                 parsed_output.append(f"    {line.strip()}")
             
             elif line.startswith("    expect("):
@@ -144,7 +144,7 @@ class TddGPTAgent:
     def run(self, goals: List[str]) -> str:
         user_input = (
             "You are at the first step. Determine which next command to use, "
-            "and respond using the json format as specified in Response Format section."
+            "and respond using the json as specified in Response Format section."
         )
 
         # Interaction Loop
@@ -285,7 +285,7 @@ class TddGPTAgent:
                 print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}')
                 print(f'\033[92mCode:\033[0m{code_str}\n')
             elif parsed["command"]["name"] == "cli":
-                parsed_memory_to_add["Action"] = f"executing cli commands: {command_str}"
+                parsed_memory_to_add["Action"] = f"executing cli commands '{command_str}'"
                 parsed_memory_to_add["Result"] = f"\n{summarized_observation}"
 
                 print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
@@ -305,8 +305,12 @@ class TddGPTAgent:
             self.memory.add_documents([Document(page_content=memory_to_add)])
             self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add, 'code': code_str}))
 
+            human_message = "Good job!"
+            if 'FAIL' in summarized_observation:
+                human_message = "However, the tests have failed."
+
             user_input = (
-                f"You have successfully completed step {loop_count}. Good job! "
+                f"You have successfully completed step {loop_count}. {human_message} "
                 f"Determine the next step based on action, result and tbd of last step "
                 f"and respond using the json specified in Response Format section."
             )
