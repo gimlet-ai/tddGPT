@@ -36,7 +36,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         """)
 
         full_prompt = (
-            f"{prompt_start}\n\nSpecfications: \n"
+            f"{prompt_start}\n\Specifications:\n"
         )
 
         full_prompt += "\n".join(goals)

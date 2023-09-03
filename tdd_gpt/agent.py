@@ -81,6 +81,66 @@ class TddGPTAgent:
         result = self.text_summarizer.summarize(text)
         return result
 
+    def parse_npm_test_output(self, test_output):
+        lines = test_output.strip().split("\n")
+        parsed_output = []
+        inside_console_error_block = False
+        inside_console_details = False
+        console_line_count = 0
+        in_expect_block = False
+        after_received = False
+
+        for line in lines:
+            if line.startswith("PASS") or line.startswith("FAIL"):
+                parsed_output.append(line + ("\n" if line.startswith("PASS") else ""))
+                inside_console_error_block = False
+                inside_console_details = False
+                in_expect_block = False  # Reset the expect block flag
+                after_received = False  # Reset the after_received flag
+
+            elif line.startswith("  ●"):
+                parsed_output.append(line)
+                inside_console_error_block = "Console" in line
+                if inside_console_error_block:
+                    inside_console_details = True
+            
+            elif "TestingLibraryElementError:" in line:
+                parsed_output.append(f"    {line.strip()}")
+            
+            elif line.startswith("    expect("):
+                parsed_output.append(line.strip())
+                in_expect_block = True  # Set flag to capture the next few lines
+            
+            elif in_expect_block and ("Expected element" in line or "Received:" in line or "Test todo" in line):
+                parsed_output.append(f"    {line.strip()}")
+                if "Received:" in line:
+                    after_received = True  # Flag to capture the line after "Received:"
+            
+            elif after_received:  # If the flag is True, capture the next line
+                parsed_output.append(f"    {line.strip()}")
+                after_received = False  # Reset the flag
+            
+            elif "Expected:" in line or "Received:" in line:
+                if not inside_console_error_block:
+                    parsed_output.append(f"    {line.strip()}")
+            
+            elif line.startswith("    >"):
+                parsed_output.append(f"    {line}\n")
+            
+            elif inside_console_error_block and inside_console_details:
+                if "console.error" in line:
+                    parsed_output.append("  ● console.error")
+                elif "Warning:" in line or "Error:" in line: 
+                    parsed_output.append(f"    {line.strip()}")
+                elif console_line_count < 1:
+                    parsed_output.append(f"    {line.strip()}")
+                    console_line_count += 1
+            
+            elif "Test Suites:" in line or "Tests:" in line:
+                parsed_output.append(line)
+
+        return "\n".join(parsed_output)
+
     def run(self, goals: List[str]) -> str:
         user_input = (
             "You are at the first step. Determine which next command to use, "
@@ -182,10 +242,13 @@ class TddGPTAgent:
                     )
 
                 if action.name == "cli":
-                    summarized_observation = self.summarize_text(observation)
+                    if 'npm test' in command_str:
+                        summarized_observation = self.parse_npm_test_output(observation)
+                        print(f"-------------------\n{observation}\n")
+                    else:
+                        summarized_observation = self.summarize_text(observation)
                 else:
                     summarized_observation = observation
-
                 result = f"The {tool.name} tool returned: {summarized_observation}"
 
             elif action.name == "ERROR":
