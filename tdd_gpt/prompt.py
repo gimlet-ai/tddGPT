@@ -108,7 +108,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         ]
 
         reactjs_instructions = [
-            "Use 'npx create-react-app <project-dir>/<app-name>' to initialize the project.",
+            "Use 'cd <project-dir> && npx create-react-app <app-name>' to initialize the project.",
             'Break the application into smaller reusable components, each responsible for a specific UI functionality.',
             'Design components in such a way that they have a single responsibility and they do it well.',
             'For each component, write the unit tests first. Then write the code so that the tests pass. Start with the main App.',

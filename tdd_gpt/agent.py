@@ -104,14 +104,14 @@ class TddGPTAgent:
                 if inside_console_error_block:
                     inside_console_details = True
             
-            elif "TestingLibraryElementError:" in line:
+            elif "TestingLibraryElementError:" in line or "ReferenceError:" in line or "TypeError:" in line:
                 parsed_output.append(f"    {line.strip()}")
             
             elif line.startswith("    expect("):
                 parsed_output.append(line.strip())
                 in_expect_block = True  # Set flag to capture the next few lines
             
-            elif in_expect_block and ("Expected element" in line or "Received:" in line or "Test todo" in line):
+            elif in_expect_block and ("Expected element" in line or "Received:" in line or "Test todo" in line or "Number of calls:" in line):
                 parsed_output.append(f"    {line.strip()}")
                 if "Received:" in line:
                     after_received = True  # Flag to capture the line after "Received:"
@@ -244,7 +244,7 @@ class TddGPTAgent:
                 if action.name == "cli":
                     if 'npm test' in command_str:
                         summarized_observation = self.parse_npm_test_output(observation)
-                        print(f"-------------------\n{observation}\n")
+                        print(f"-------------------\n{observation}\n-----------------")
                     else:
                         summarized_observation = self.summarize_text(observation)
                 else:
@@ -286,7 +286,7 @@ class TddGPTAgent:
                 print(f'\033[92mCode:\033[0m{code_str}\n')
             elif parsed["command"]["name"] == "cli":
                 parsed_memory_to_add["Action"] = f"executing cli commands: {command_str}"
-                parsed_memory_to_add["Result"] = summarized_observation
+                parsed_memory_to_add["Result"] = f"\n{summarized_observation}"
 
                 print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
                 log_file.write(json.dumps(parsed_memory_to_add))
@@ -306,6 +306,7 @@ class TddGPTAgent:
             self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add, 'code': code_str}))
 
             user_input = (
-                f"You have suffessfully completed step {loop_count}. Good job! Determine the next step "
-                f"and respond using the json format as specified in Response Format section."
+                f"You have successfully completed step {loop_count}. Good job! "
+                f"Determine the next step based on action, result and tbd of last step "
+                f"and respond using the json specified in Response Format section."
             )
