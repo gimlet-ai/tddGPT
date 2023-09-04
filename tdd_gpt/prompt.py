@@ -65,7 +65,6 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             and len(m.additional_kwargs['code'].strip()) > 0
         ]
         code_context_tokens = sum([self.token_counter(code) for code in code_context])
-        print(f"=> code context: len {len(code_context)}, tokens {code_context_tokens}")
 
         # Get the last system message
         last_system_message = next((
@@ -83,9 +82,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         # Fit as much code context as possible based on available tokens
         while code_context_tokens > available_tokens:
-            code_context = code_context[-1:]
+            code_context = code_context[:-1]
             code_context_tokens = sum([self.token_counter(code) for code in code_context])
-            print(f"=> code context: len {len(code_context)}, tokens {code_context_tokens}")
 
         code_context_str = "\n".join(code_context).strip() if len(code_context) > 0 else "None"
         prompt_suffix = f"Code Context:\n>>>>\n{code_context_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"

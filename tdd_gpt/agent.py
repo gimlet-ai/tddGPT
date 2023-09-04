@@ -199,10 +199,10 @@ class TddGPTAgent:
                 try:
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
+                    print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     print(f'\033[92mDone:\033[0m {parsed["thoughts"]["done"]}')
                     print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
                     print(f'\033[92mTBD:\033[0m\n{parsed["thoughts"]["tbd"]}')
-                    print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     if parsed["command"]["name"] == "cli":
                       commands = parsed['command']['args']['commands']
                       command_str = " && ".join(commands) if isinstance(commands, list) else commands
@@ -244,7 +244,6 @@ class TddGPTAgent:
                 if action.name == "cli":
                     if 'npm test' in command_str:
                         summarized_observation = self.parse_npm_test_output(observation)
-                        print(f"-------------------\n{observation}\n-----------------")
                     else:
                         summarized_observation = self.summarize_text(observation)
                 else:

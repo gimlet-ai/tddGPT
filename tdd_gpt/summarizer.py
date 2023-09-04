@@ -9,32 +9,10 @@ import textwrap
 
 class TextSummarizer:
     CLI_TEMPLATE = textwrap.dedent("""Summarize the output in the following format.
-
-            <format>
-            The commands <succeded/failed> with the message <output summary>.
-            </format>
-
-            If, **and only if**, the output is from an 'npm test' command, follow the instructions below to summarize instead.
-                                   
-            Summarize each test failure in the following format.
-
-            <format>
-            Test Case: <test case description>
-            Error: <error message>
-            File name: <file name>
-            Code Snippet: 
-            ```
-            <code snippet which caused the failure, if any>
-            ```
-            </format>
-
-            Include test stats at the end (only once) in the following format. 
-
-            <format>
-            <num> tests failed out of <num> total tests
-            </format>
             
-            Ignore any warnings, security vulnerabilities, dependency/audit issues. 
+            <format>
+            The commands <succeeded/failed> with the message <output summary>.
+            </format>
             """)
 
     MEMORY_TEMPLATE = textwrap.dedent("""Summarize each step concisely and highlight the result.
