@@ -81,10 +81,70 @@ class TddGPTAgent:
         result = self.text_summarizer.summarize(text)
         return result
 
+    def parse_npm_test_output(self, test_output):
+        lines = test_output.strip().split("\n")
+        parsed_output = []
+        inside_console_error_block = False
+        inside_console_details = False
+        console_line_count = 0
+        in_expect_block = False
+        after_received = False
+
+        for line in lines:
+            if line.startswith("PASS") or line.startswith("FAIL"):
+                parsed_output.append(line + ("\n" if line.startswith("PASS") else ""))
+                inside_console_error_block = False
+                inside_console_details = False
+                in_expect_block = False  # Reset the expect block flag
+                after_received = False  # Reset the after_received flag
+
+            elif line.startswith("  ●"):
+                parsed_output.append(line)
+                inside_console_error_block = "Console" in line
+                if inside_console_error_block:
+                    inside_console_details = True
+            
+            elif "Error: " in line:
+                parsed_output.append(f"    {line.strip()}")
+            
+            elif line.startswith("    expect("):
+                parsed_output.append(line.strip())
+                in_expect_block = True  # Set flag to capture the next few lines
+            
+            elif in_expect_block and ("Expected element" in line or "Received:" in line or "Test todo" in line or "Number of calls:" in line):
+                parsed_output.append(f"    {line.strip()}")
+                if "Received:" in line:
+                    after_received = True  # Flag to capture the line after "Received:"
+            
+            elif after_received:  # If the flag is True, capture the next line
+                parsed_output.append(f"    {line.strip()}")
+                after_received = False  # Reset the flag
+            
+            elif "Expected:" in line or "Received:" in line:
+                if not inside_console_error_block:
+                    parsed_output.append(f"    {line.strip()}")
+            
+            elif line.startswith("    >"):
+                parsed_output.append(f"    {line}\n")
+            
+            elif inside_console_error_block and inside_console_details:
+                if "console.error" in line:
+                    parsed_output.append("  ● console.error")
+                elif "Warning:" in line or "Error:" in line: 
+                    parsed_output.append(f"    {line.strip()}")
+                elif console_line_count < 1:
+                    parsed_output.append(f"    {line.strip()}")
+                    console_line_count += 1
+            
+            elif "Test Suites:" in line or "Tests:" in line:
+                parsed_output.append(line)
+
+        return "\n".join(parsed_output)
+
     def run(self, goals: List[str]) -> str:
         user_input = (
             "You are at the first step. Determine which next command to use, "
-            "and respond using the json format as specified in Response Format section."
+            "and respond using the json as specified in Response Format section."
         )
 
         # Interaction Loop
@@ -139,10 +199,10 @@ class TddGPTAgent:
                 try:
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
+                    print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     print(f'\033[92mDone:\033[0m {parsed["thoughts"]["done"]}')
                     print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
                     print(f'\033[92mTBD:\033[0m\n{parsed["thoughts"]["tbd"]}')
-                    print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     if parsed["command"]["name"] == "cli":
                       commands = parsed['command']['args']['commands']
                       command_str = " && ".join(commands) if isinstance(commands, list) else commands
@@ -182,10 +242,12 @@ class TddGPTAgent:
                     )
 
                 if action.name == "cli":
-                    summarized_observation = self.summarize_text(observation)
+                    if 'npm test' in command_str:
+                        summarized_observation = self.parse_npm_test_output(observation)
+                    else:
+                        summarized_observation = self.summarize_text(observation)
                 else:
                     summarized_observation = observation
-
                 result = f"The {tool.name} tool returned: {summarized_observation}"
 
             elif action.name == "ERROR":
@@ -222,8 +284,8 @@ class TddGPTAgent:
                 print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}')
                 print(f'\033[92mCode:\033[0m{code_str}\n')
             elif parsed["command"]["name"] == "cli":
-                parsed_memory_to_add["Action"] = f"executing cli commands: {command_str}"
-                parsed_memory_to_add["Result"] = summarized_observation
+                parsed_memory_to_add["Action"] = f"executing cli commands '{command_str}'"
+                parsed_memory_to_add["Result"] = f"\n{summarized_observation}"
 
                 print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
                 log_file.write(json.dumps(parsed_memory_to_add))
@@ -242,7 +304,12 @@ class TddGPTAgent:
             self.memory.add_documents([Document(page_content=memory_to_add)])
             self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add, 'code': code_str}))
 
+            human_message = "Good job!"
+            if 'FAIL' in summarized_observation:
+                human_message = "However, the tests have failed."
+
             user_input = (
-                f"You have suffessfully completed step {loop_count}. Good job! Determine the next step "
-                f"and respond using the json format as specified in Response Format section."
+                f"You have successfully completed step {loop_count}. {human_message} "
+                f"Determine the next step based on action, result and tbd of last step "
+                f"and respond using the json specified in Response Format section."
             )

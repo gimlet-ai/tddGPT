@@ -36,7 +36,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         """)
 
         full_prompt = (
-            f"{prompt_start}\n\nSpecfications: \n"
+            f"{prompt_start}\nSpecifications:\n"
         )
 
         full_prompt += "\n".join(goals)
@@ -58,10 +58,11 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         # Extract code context from previous system messages
         code_context = [
-            m.additional_kwargs.get("code", "") 
+            m.additional_kwargs["code"]
             for m in reversed(previous_messages) 
             if isinstance(m, SystemMessage) 
             and "code" in m.additional_kwargs 
+            and len(m.additional_kwargs['code'].strip()) > 0
         ]
         code_context_tokens = sum([self.token_counter(code) for code in code_context])
 
@@ -81,14 +82,14 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         # Fit as much code context as possible based on available tokens
         while code_context_tokens > available_tokens:
-            code_context = code_context[-1:]
+            code_context = code_context[:-1]
             code_context_tokens = sum([self.token_counter(code) for code in code_context])
 
         code_context_str = "\n".join(code_context).strip() if len(code_context) > 0 else "None"
-        code_content = f"Code Context:\n>>>>\n{code_context_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
+        prompt_suffix = f"Code Context:\n>>>>\n{code_context_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
 
         # Compile the full prompt
-        full_prompt = base_prompt.content + code_content
+        full_prompt = base_prompt.content + prompt_suffix
 
         # Create a list of messages
         messages: List[BaseMessage] = [SystemMessage(content=full_prompt), HumanMessage(content=user_input)]
@@ -108,16 +109,18 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         ]
 
         reactjs_instructions = [
-            "Use 'npx create-react-app <project-dir>/<app-name>' to initialize the project.",
+            "Use 'cd <project-dir> && npx create-react-app <app-name>' to initialize the project.",
             'Break the application into smaller reusable components, each responsible for a specific UI functionality.',
             'Design components in such a way that they have a single responsibility and they do it well.',
             'For each component, write the unit tests first. Then write the code so that the tests pass. Start with the main App.',
-            '**While implementing components, match the names of props/labels/placeholders/buttons/testids with the tests.**',
+            "Avoid using 'data-testid' attributes for testing; instead use the query functions of React Testing library."
+            "**While implementing components, match the names of props/labels/placeholders/buttons with the tests.**",
             'Ensure that the tests accurately reflect the structure and functionality of the components.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
             'Avoid mutating state directly: instead use "setState" or the "useState" hook.',
-            'While debugging test failures, think about the error message and check the Code Context section to come up with a fix.',
+            'While debugging test failures, think about the error message and check the Code Context section to come up with a fix. Use your creativity.',
+            "Use App.css to make the app visually appealing. Import App.css into the main App after updting it.",
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',
             'Run npm test with CI as true. Never run npm start/npm audit.',
@@ -130,6 +133,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Check if the full path is being used for all file/directories.",
             "How many App.test files are there?",
             "Is there a mismatch between the tests and the code?",
+            "Does the main App import App.css?",
             "Every step has a cost, so be smart and efficient. "
             "Aim to complete the app in the least number of steps."
         ]
@@ -138,8 +142,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "thoughts": {
                 "text": "thoughts about the current step",
                 "reasoning": "reasoning about the plan",
-                "criticism": "constructive self-criticism of the progress/performance",
-                "done": "summary of tasks completed",
+                "criticism": "constructive self-criticism of the process/progress/performance",
+                "done": "tasks completed previously",
                 "plan": "tasks to do in the current step",
                 "tbd": "- bulleted list of\n- tasks to be done next\n- based on initial plan",
             },
