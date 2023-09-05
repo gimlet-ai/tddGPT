@@ -54,7 +54,7 @@ def main():
     agent = TddGPTAgent.from_llm_and_tools(
         output_dir=args.output_dir,
         tools=tools,
-        llm=ChatOpenAI(model='gpt-4-0613', temperature=0.0),
+        llm=ChatOpenAI(model='gpt-4-0613', temperature=0.2),
         memory=vectorstore.as_retriever(),
         chat_history_memory=chat_history_memory,
     )

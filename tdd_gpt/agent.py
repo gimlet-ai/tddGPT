@@ -150,7 +150,6 @@ class TddGPTAgent:
         # Interaction Loop
         loop_count = 0
         log_file = open("run.log", "a")
-        human_message = ""
 
         def signal_handler(sig, frame):
             print('You pressed Ctrl+C!')
@@ -159,6 +158,8 @@ class TddGPTAgent:
         signal.signal(signal.SIGINT, signal_handler)
 
         while True:
+            human_message = ""
+
             # Discontinue if continuous limit is reached
             loop_count += 1
 
@@ -203,7 +204,7 @@ class TddGPTAgent:
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     print(f'\033[92mDone:\033[0m\n{parsed["thoughts"]["done"]}')
                     print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
-                    print(f'\033[92mTBD:\033[0m\n{parsed["thoughts"]["tbd"]}')
+                    print(f'\033[92mTBDs:\033[0m\n{parsed["thoughts"]["tbds"]}')
                     if parsed["command"]["name"] == "cli":
                       commands = parsed['command']['args']['commands']
                       command_str = " && ".join(commands) if isinstance(commands, list) else commands
@@ -246,7 +247,7 @@ class TddGPTAgent:
                     if 'npm test' in command_str:
                         summarized_observation = self.parse_npm_test_output(observation)
 
-                        print(f'-----------\n{observation}\n---------')
+                        # print(f'-----------\n{observation}\n---------')
 
                         if 'FAIL' in summarized_observation:
                             human_message = "However, the tests have failed."
@@ -272,9 +273,9 @@ class TddGPTAgent:
                 "Thought": parsed['thoughts']['text'],
                 "Reasoning": parsed['thoughts']['reasoning'],
                 "Criticism": parsed['thoughts']['criticism'],
-                "Done": parsed['thoughts']['done'],
+                "Done": f'\n{parsed["thoughts"]["done"]}',
                 "Plan": f'{parsed["thoughts"]["plan"]}',
-                "TBD": f'\n{parsed["thoughts"]["tbd"]}',
+                "TBDs": f'\n{parsed["thoughts"]["tbds"]}',
             }
 
             code_str = ""
