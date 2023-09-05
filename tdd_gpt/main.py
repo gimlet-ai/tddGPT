@@ -67,7 +67,7 @@ def main():
         with open(prompt, 'r') as file:
             prompt = file.read()
 
-    print(f'{prompt}\n')
+    print(f'\033[92mPrompt:\033[0m\n{prompt}\n')
     agent.run([prompt])
 
 if __name__ == "__main__":

@@ -149,7 +149,8 @@ class TddGPTAgent:
 
         # Interaction Loop
         loop_count = 0
-        log_file = open("run.log", "w")
+        log_file = open("run.log", "a")
+        human_message = ""
 
         def signal_handler(sig, frame):
             print('You pressed Ctrl+C!')
@@ -200,7 +201,7 @@ class TddGPTAgent:
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
-                    print(f'\033[92mDone:\033[0m {parsed["thoughts"]["done"]}')
+                    print(f'\033[92mDone:\033[0m\n{parsed["thoughts"]["done"]}')
                     print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
                     print(f'\033[92mTBD:\033[0m\n{parsed["thoughts"]["tbd"]}')
                     if parsed["command"]["name"] == "cli":
@@ -244,10 +245,18 @@ class TddGPTAgent:
                 if action.name == "cli":
                     if 'npm test' in command_str:
                         summarized_observation = self.parse_npm_test_output(observation)
+
+                        print(f'-----------\n{observation}\n---------')
+
+                        if 'FAIL' in summarized_observation:
+                            human_message = "However, the tests have failed."
+                        else:
+                            human_message = "All tests have passed. Good job!"
                     else:
                         summarized_observation = self.summarize_text(observation)
                 else:
                     summarized_observation = observation
+
                 result = f"The {tool.name} tool returned: {summarized_observation}"
 
             elif action.name == "ERROR":
@@ -288,8 +297,8 @@ class TddGPTAgent:
                 parsed_memory_to_add["Result"] = f"\n{summarized_observation}"
 
                 print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
-                log_file.write(json.dumps(parsed_memory_to_add))
 
+            log_file.write(json.dumps(parsed_memory_to_add))
             memory_to_add = '\n'.join([f'{k}: {v}' for k, v in parsed_memory_to_add.items()])
 
             if self.feedback_tool is not None:
@@ -304,12 +313,7 @@ class TddGPTAgent:
             self.memory.add_documents([Document(page_content=memory_to_add)])
             self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add, 'code': code_str}))
 
-            human_message = "Good job!"
-            if 'FAIL' in summarized_observation:
-                human_message = "However, the tests have failed."
-
             user_input = (
-                f"You have successfully completed step {loop_count}. {human_message} "
-                f"Determine the next step based on action, result and tbd of last step "
-                f"and respond using the json specified in Response Format section."
+                f"You have completed step {loop_count}. {human_message} "
+                f"Determine the next step and respond using the json specified in Response Format section."
             )

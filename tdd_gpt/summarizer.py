@@ -8,11 +8,8 @@ from langchain.chains import StuffDocumentsChain, LLMChain
 import textwrap
 
 class TextSummarizer:
-    CLI_TEMPLATE = textwrap.dedent("""Summarize the output in the following format.
-            
-            <format>
-            The commands <succeeded/failed> with the message <output summary>.
-            </format>
+    CLI_TEMPLATE = textwrap.dedent("""
+            Summarize the output like 'The commands <succeeded/failed> with the message <output summary>'.
             """)
 
     MEMORY_TEMPLATE = textwrap.dedent("""Summarize each step concisely and highlight the result.
