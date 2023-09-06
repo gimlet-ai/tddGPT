@@ -205,7 +205,7 @@ class TddGPTAgent:
                     print(f'\033[92mDone:\033[0m\n{parsed["thoughts"]["done"]}')
                     print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
                     print(f'\033[92mTBDs:\033[0m\n{parsed["thoughts"]["tbds"]}')
-                    if parsed["command"]["name"] == "cli":
+                    if 'command' in parsed and parsed["command"]["name"] == "cli":
                       commands = parsed['command']['args']['commands']
                       command_str = " && ".join(commands) if isinstance(commands, list) else commands
                       print(f"\033[92mAction:\033[0m executing cli commands '{command_str}'")
@@ -279,25 +279,26 @@ class TddGPTAgent:
             }
 
             code_str = ""
-            if parsed["command"]["name"] == "read_file":
-                code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{observation}\n```"
+            if 'command' in parsed:
+              if parsed["command"]["name"] == "read_file":
+                  code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{observation}\n```"
 
-                parsed_memory_to_add["Action"] = f'reading file {parsed["command"]["args"]["file_path"]}'
+                  parsed_memory_to_add["Action"] = f'reading file {parsed["command"]["args"]["file_path"]}'
 
-                print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
-                print(f'\033[92mCode:\033[0m{code_str}\n')
-            elif parsed["command"]["name"] == "write_file":
-                code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{parsed['command']['args']['text']}\n```"
+                  print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
+                  print(f'\033[92mCode:\033[0m{code_str}\n')
+              elif parsed["command"]["name"] == "write_file":
+                  code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{parsed['command']['args']['text']}\n```"
 
-                parsed_memory_to_add["Action"] = f'writing file {parsed["command"]["args"]["file_path"]}'
+                  parsed_memory_to_add["Action"] = f'writing file {parsed["command"]["args"]["file_path"]}'
 
-                print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}')
-                print(f'\033[92mCode:\033[0m{code_str}\n')
-            elif parsed["command"]["name"] == "cli":
-                parsed_memory_to_add["Action"] = f"executing cli commands '{command_str}'"
-                parsed_memory_to_add["Result"] = f"\n{summarized_observation}"
+                  print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}')
+                  print(f'\033[92mCode:\033[0m{code_str}\n')
+              elif parsed["command"]["name"] == "cli":
+                  parsed_memory_to_add["Action"] = f"executing cli commands '{command_str}'"
+                  parsed_memory_to_add["Result"] = f"\n{summarized_observation}"
 
-                print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
+                  print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
 
             log_file.write(json.dumps(parsed_memory_to_add))
             memory_to_add = '\n'.join([f'{k}: {v}' for k, v in parsed_memory_to_add.items()])

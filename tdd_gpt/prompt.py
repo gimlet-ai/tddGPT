@@ -13,6 +13,7 @@ from langchain.vectorstores.base import VectorStoreRetriever
 from summarizer import TextSummarizer
 import textwrap
 
+
 class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
     tools: List[BaseTool]
     token_counter: Callable[[str], int]
@@ -31,9 +32,10 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         You are working on a {os_name} machine and the current working directory is {os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.
         You are creative and talented, having built many complex web applications successfully. You can take on any challenge. 
         Think step by step. Plan each step based on the tasks already done and action/result/TBDs of last step. Update future TBDs as per the plan. 
-        Analylze the specs and come up with overall plan to design, implement, test and style the app. Save it to PLAN.md file.
+        Analylze the specs and come up with a detailed project plan. Include requirements, design, implementation, testing, styling, tasks, risks, etc. Save it to PLAN.md file. 
         Write the code for each file in full (you cannot edit files).
-        If you have completed all your tasks, make sure to use the "finish" command.
+        After testing is complete, reflect on the mistakes you made and identify some areas of improvement. Save it to LESSONS.md file.
+        If you have completed all your tasks, make sure to use the "finish" command. 
         """)
 
         full_prompt = (
@@ -113,15 +115,17 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'Design components in such a way that they have a single responsibility and they do it well.',
             'For each component, write the unit tests first. Then write the code so that the tests pass. Start with the main App.',
             "Avoid using data-testid attributes; instead use the query functions of React Testing library."
-            "**While implementing components, match the names of props/labels/placeholders/buttons with the tests.**",
+            "**Be careful with the names of props, labels, placeholders, and buttons to avoid mismatches between the tests and the code.**",
             'Ensure that the tests accurately reflect the structure and functionality of the components. Aim for 100% test coverage.',
+            'Always update the tests when making changes to the components. This will prevent the tests from failing.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
             'Avoid mutating state directly: instead use the setState/useState hook.',
             'While debugging test failures, think about the error message and refer to the Code Context section to come up with a fix. Be creative.',
-            "Use App.css to make the app slick and responsive. Remember to import App.css into the main App.",
+            "Add css styles to App.css to make the app visually appealing and responsive. Use your imagination.",
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',
+            "Update the main App to include the App.css and components before starting on testing."
             'Run npm test with CI as true. Never run npm start/npm audit.',
         ]
 
