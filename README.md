@@ -6,7 +6,7 @@ TDD-GPT is an autonomous agent that builds ReactJS, Flask, Express, etc. applica
 
 The agent can successfuly build simple CRUD apps. The TDD approach helps to keep the agent focussed on the goal. If it gets stuck, just modify the prompt and restart.
 
-This project is in early alpha stage. GPT-4 API key is required.
+This project is in early alpha stage. GPT-4 API key is required. 
 
 ## Setup Instructions
 
@@ -50,6 +50,12 @@ tdd-gpt --prompt 'build a flask app with a form to record the name, address, dob
 ```
 
 Check the flask-app directory for the generated app.
+
+## Example apps
+
+The following are some apps have been built by this agent.
+
+- [Task Manager](https://brilliant-biscotti-3f9e48.netlify.app/)
 
 ## Similar Projects
 
