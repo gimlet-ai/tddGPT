@@ -149,13 +149,6 @@ class TddGPTAgent:
 
         # Interaction Loop
         loop_count = 0
-        log_file = open("run.log", "a")
-
-        def signal_handler(sig, frame):
-            print('You pressed Ctrl+C!')
-            log_file.close()
-            sys.exit(0)
-        signal.signal(signal.SIGINT, signal_handler)
 
         while True:
             human_message = ""
@@ -205,7 +198,7 @@ class TddGPTAgent:
                     print(f'\033[92mDone:\033[0m\n{parsed["thoughts"]["done"]}')
                     print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
                     print(f'\033[92mTBDs:\033[0m\n{parsed["thoughts"]["tbds"]}')
-                    if 'command' in parsed and parsed["command"]["name"] == "cli":
+                    if parsed["command"]["name"] == "cli":
                       commands = parsed['command']['args']['commands']
                       command_str = " && ".join(commands) if isinstance(commands, list) else commands
                       print(f"\033[92mAction:\033[0m executing cli commands '{command_str}'")
@@ -228,8 +221,8 @@ class TddGPTAgent:
 
             tools = {t.name: t for t in self.tools}
             if action.name == FINISH_NAME:
-                log_file.close()
                 return action.args.get("response", "Goals completed! Exiting.") 
+
             if action.name in tools:
                 tool = tools[action.name]
                 try:
@@ -250,9 +243,9 @@ class TddGPTAgent:
                         # print(f'-----------\n{observation}\n---------')
 
                         if 'FAIL' in summarized_observation:
-                            human_message = "However, the tests have failed."
+                            human_message = "However, the tests have failed. "
                         else:
-                            human_message = "All tests have passed. Good job!"
+                            human_message = "All tests have passed. Good job! "
                     else:
                         summarized_observation = self.summarize_text(observation)
                 else:
@@ -279,36 +272,32 @@ class TddGPTAgent:
             }
 
             code_str = ""
-            if 'command' in parsed:
-              if parsed["command"]["name"] == "read_file":
-                  code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{observation}\n```"
+            if parsed["command"]["name"] == "read_file":
+                code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{observation}\n```"
 
-                  parsed_memory_to_add["Action"] = f'reading file {parsed["command"]["args"]["file_path"]}'
+                parsed_memory_to_add["Action"] = f'reading file {parsed["command"]["args"]["file_path"]}'
 
-                  print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
-                  print(f'\033[92mCode:\033[0m{code_str}\n')
-              elif parsed["command"]["name"] == "write_file":
-                  code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{parsed['command']['args']['text']}\n```"
+                print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
+                print(f'\033[92mCode:\033[0m{code_str}\n')
+            elif parsed["command"]["name"] == "write_file":
+                code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{parsed['command']['args']['text']}\n```"
 
-                  parsed_memory_to_add["Action"] = f'writing file {parsed["command"]["args"]["file_path"]}'
+                parsed_memory_to_add["Action"] = f'writing file {parsed["command"]["args"]["file_path"]}'
 
-                  print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}')
-                  print(f'\033[92mCode:\033[0m{code_str}\n')
-              elif parsed["command"]["name"] == "cli":
-                  parsed_memory_to_add["Action"] = f"executing cli commands '{command_str}'"
-                  parsed_memory_to_add["Result"] = f"\n{summarized_observation}"
+                print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}')
+                print(f'\033[92mCode:\033[0m{code_str}\n')
+            elif parsed["command"]["name"] == "cli":
+                parsed_memory_to_add["Action"] = f"executing cli commands '{command_str}'"
+                parsed_memory_to_add["Result"] = f"\n{summarized_observation}"
 
-                  print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
+                print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
 
-            log_file.write(json.dumps(parsed_memory_to_add))
             memory_to_add = '\n'.join([f'{k}: {v}' for k, v in parsed_memory_to_add.items()])
 
             if self.feedback_tool is not None:
                 feedback = f"\n{self.feedback_tool.run('Input: ')}"
                 if feedback in {"q", "stop"}:
                     print("EXITING")
-                    log_file.write("EXITING\n")
-                    log_file.close()
                     return "EXITING"
                 memory_to_add += f"\nFeedback: {feedback}"
 
@@ -316,6 +305,6 @@ class TddGPTAgent:
             self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add, 'code': code_str}))
 
             user_input = (
-                f"You have completed step {loop_count}. {human_message} "
+                f"You have completed step {loop_count}. {human_message}"
                 f"Determine the next step and respond using the json specified in Response Format section."
             )
