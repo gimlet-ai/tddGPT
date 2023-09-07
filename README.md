@@ -55,7 +55,7 @@ Check the flask-app directory for the generated app.
 
 The following are some apps have been built by this agent.
 
-- [Task Manager](https://brilliant-biscotti-3f9e48.netlify.app/)
+- [Task Tracker](https://brilliant-biscotti-3f9e48.netlify.app/)
 
 ## Similar Projects
 
