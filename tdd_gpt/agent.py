@@ -164,6 +164,8 @@ class TddGPTAgent:
                 user_input=user_input,
             )
 
+            assistant_reply = assistant_reply.replace("<project-dir>", "/Users/rajiv/Downloads/projects")
+
             print(f"\033[91mStep Number:\033[0m {loop_count}")
 
             start_index = assistant_reply.find('{')
@@ -243,7 +245,7 @@ class TddGPTAgent:
                         # print(f'-----------\n{observation}\n---------')
 
                         if 'FAIL' in summarized_observation:
-                            human_message = "However, the tests have failed. "
+                            human_message = "However, the tests have failed. Try harder. "
                         else:
                             human_message = "All tests have passed. Good job! "
                     else:
