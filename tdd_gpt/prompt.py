@@ -111,7 +111,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         ]
 
         reactjs_instructions = [
-            "Use 'cd <project-dir> && npx create-react-app <app-name>' to initialize the project, if required.",
+            "Use 'cd <project-dir> && CI=true npx create-react-app <app-name>' to initialize the project, if required.",
             'Break the application into smaller reusable components, each responsible for a specific functionality.',
             'For each component, write the unit tests first. Then write the code so that the tests pass. Start with the main App.',
             "Avoid using data-testid attributes in the tests; instead use the query functions of React Testing library."
