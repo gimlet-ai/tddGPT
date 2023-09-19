@@ -55,7 +55,7 @@ def main():
         output_dir=args.output_dir,
         tools=tools,
         llm=ChatOpenAI(model='gpt-4-0613', temperature=0.5),
-        # llm=ChatOpenAI(model='ft:gpt-3.5-turbo-0613:gimlet:reactjs:7yF8tHGA', temperature=0.0),
+        #llm=ChatOpenAI(model='ft:gpt-3.5-turbo-0613:gimlet:reactjs:7yF8tHGA', temperature=0.0),
         memory=vectorstore.as_retriever(),
         chat_history_memory=chat_history_memory,
     )

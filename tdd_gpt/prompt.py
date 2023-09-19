@@ -26,10 +26,11 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
     def construct_full_prompt(self, goals: List[str]) -> str:
         os_name = 'MacOS' if platform.system() == 'Darwin' else platform.system()
+        self.output_dir = os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()
 
         prompt_start = textwrap.dedent(f"""
         As an experienced Full Stack Web Developer, your task is to build apps as per the specifications using the TDD method.
-        You are working on a {os_name} machine and the current working directory is {os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()}.
+        You are working on a {os_name} machine and the current working directory is {self.output_dir}.
         You are creative and talented, having built many complex web applications successfully. You can take on any challenge. 
         Review the specs and develop a project plan, capturing the requirements, design approach, coding tasks, pseudocode, testing phases, styling, etc. Save it to PLAN.md file.
         Think step by step. Plan each step based on the tasks already done and action/result/TBDs of last step. Update future TBDs as per the plan. 
@@ -111,10 +112,10 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         ]
 
         reactjs_instructions = [
-            "Use 'cd <project-dir> && CI=true npx create-react-app <app-name>' to initialize the project, if required.",
+            f"Use 'cd {self.output_dir} && CI=true npx create-react-app <app-name>' to initialize the project, if required.",
             'Break the application into smaller reusable components, each responsible for a specific functionality.',
             'For each component, write the unit tests first. Then write the code so that the tests pass. Start with the main App.',
-            "Avoid using data-testid attributes in the tests; instead use the query functions of React Testing library."
+            "Avoid using data-testid attributes in the tests; instead use the query functions of React Testing library.",
             "When updating components, make sure to also update the corresponding tests.",
             "Use the act function when testing components that use timers or other asynchronous operations.",
             "**Be careful with the names of props, labels, placeholders, and buttons to avoid mismatches between the tests and the code.**",
@@ -168,7 +169,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             f"For ReactJS Projects:\n{reactjs_instructions_str}\n\n"
             f"Commands:\n{commands_str}\n\n"
             f"Performance Evaluation:\n{performance_evaluation_str}\n\n"
-            f"Response Format:\n```json\n{formatted_response_format}\n```\n"
+            f"Response Format:\n```json\n{formatted_response_format}\n```\n\n"
         )
 
         return prompt_string
