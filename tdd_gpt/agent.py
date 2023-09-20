@@ -164,8 +164,6 @@ class TddGPTAgent:
                 user_input=user_input,
             )
 
-            assistant_reply = assistant_reply.replace("<project-dir>", "/Users/rajiv/Downloads/projects")
-
             print(f"\033[91mStep Number:\033[0m {loop_count}")
 
             start_index = assistant_reply.find('{')

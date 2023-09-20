@@ -1,6 +1,7 @@
 from agent import TddGPTAgent
 from cli import CLITool
 from langchain.chat_models import ChatOpenAI
+from langchain.llms import OpenAI
 from langchain.tools.file_management.write import WriteFileTool
 from langchain.tools.file_management.read import ReadFileTool
 from langchain.tools import ShellTool
@@ -54,8 +55,8 @@ def main():
     agent = TddGPTAgent.from_llm_and_tools(
         output_dir=args.output_dir,
         tools=tools,
-        llm=ChatOpenAI(model='gpt-4-0613', temperature=0.5),
-        #llm=ChatOpenAI(model='ft:gpt-3.5-turbo-0613:gimlet:reactjs:7yF8tHGA', temperature=0.0),
+        # llm=ChatOpenAI(model='gpt-4-0613', temperature=0.5),
+        llm=ChatOpenAI(model='ft:gpt-3.5-turbo-0613:gimlet:reactjs:80OzaHs0', temperature=0.2),
         memory=vectorstore.as_retriever(),
         chat_history_memory=chat_history_memory,
     )
@@ -69,6 +70,7 @@ def main():
             prompt = file.read()
 
     print(f'\033[92mPrompt:\033[0m\n{prompt}\n')
+
     agent.run([prompt])
 
 if __name__ == "__main__":
