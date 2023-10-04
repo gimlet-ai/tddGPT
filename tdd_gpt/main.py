@@ -1,6 +1,7 @@
 from agent import TddGPTAgent
 from cli import CLITool
 from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatLiteLLM
 from langchain.llms import OpenAI
 from langchain.tools.file_management.write import WriteFileTool
 from langchain.tools.file_management.read import ReadFileTool
@@ -56,7 +57,7 @@ def main():
         output_dir=args.output_dir,
         tools=tools,
         # llm=ChatOpenAI(model='gpt-4-0613', temperature=0.5),
-        llm=ChatOpenAI(model='ft:gpt-3.5-turbo-0613:gimlet:reactjs:80OzaHs0', temperature=0.2),
+        llm=ChatLiteLLM(model='ft:gpt-3.5-turbo-0613:gimlet:reactjs:80OzaHs0', temperature=0.2),
         memory=vectorstore.as_retriever(),
         chat_history_memory=chat_history_memory,
     )
