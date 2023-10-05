@@ -1,13 +1,13 @@
 from agent import TddGPTAgent
 from cli import CLITool
 from langchain.chat_models import ChatOpenAI
-from langchain.llms import OpenAI
+from langchain.llms import OpenAI, LlamaCpp
 from langchain.tools.file_management.write import WriteFileTool
 from langchain.tools.file_management.read import ReadFileTool
 from langchain.tools import ShellTool
 from langchain.vectorstores import FAISS
 from langchain.docstore import InMemoryDocstore
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import LlamaCppEmbeddings
 from langchain.memory.chat_message_histories import FileChatMessageHistory
 import faiss
 import argparse
@@ -44,19 +44,35 @@ def main():
     ]
 
     # Define your embedding model
-    embeddings_model = OpenAIEmbeddings()
+    embeddings_model = LlamaCppEmbeddings(model_path='/Users/rajiv/Downloads/projects/llama.cpp/models/TheBloke/CodeLlama-34B-Instruct-GGUF/codellama-34b-instruct.Q4_K_M.gguf')
 
     # Initialize the vectorstore as empty
-    embedding_size = 1536
+    embedding_size = 8192
     index = faiss.IndexFlatL2(embedding_size)
     vectorstore = FAISS(embeddings_model.embed_query, index, InMemoryDocstore({}), {})
+
+    n_gpu_layers = 1 
+    n_batch = 2048
+    llm = LlamaCpp(
+        model_path="/Users/rajiv/Downloads/projects/llama.cpp/models/TheBloke/CodeLlama-34B-Instruct-GGUF/codellama-34b-instruct.Q4_K_M.gguf",
+        temperature=0.75,
+        n_ctx=2048,
+        max_tokens=2000,
+        top_p=1,
+        n_gpu_layers=n_gpu_layers,
+        n_batch=n_batch,
+        f16_kv=True,  
+        verbose=False,
+        grammar_path="/Users/rajiv/Downloads/projects/llama.cpp/examples/tddGPT.gbnf",
+    )
 
     # Initialize the agent
     agent = TddGPTAgent.from_llm_and_tools(
         output_dir=args.output_dir,
         tools=tools,
         # llm=ChatOpenAI(model='gpt-4-0613', temperature=0.5),
-        llm=ChatOpenAI(model='ft:gpt-3.5-turbo-0613:gimlet:reactjs:80OzaHs0', temperature=0.2),
+        #llm=ChatOpenAI(model='ft:gpt-3.5-turbo-0613:gimlet:reactjs:80OzaHs0', temperature=0.2),
+        llm=llm,
         memory=vectorstore.as_retriever(),
         chat_history_memory=chat_history_memory,
     )

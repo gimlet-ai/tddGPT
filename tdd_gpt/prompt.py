@@ -29,6 +29,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         self.output_dir = os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()
 
         prompt_start = textwrap.dedent(f"""
+        [INST] <<SYS>>
         As an experienced Full Stack Web Developer, your task is to build apps as per the specifications using the TDD method.
         You are working on a {os_name} machine and the current working directory is {self.output_dir}.
         You are creative and talented, having built many complex web applications successfully. You can take on any challenge. 

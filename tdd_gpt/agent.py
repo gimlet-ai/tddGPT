@@ -143,8 +143,8 @@ class TddGPTAgent:
 
     def run(self, goals: List[str]) -> str:
         user_input = (
-            "You are at the first step. Determine which next command to use, "
-            "and respond using the json as specified in Response Format section."
+            "<</SYS>>\n\nYou are at the first step. Determine which next command to use, "
+            "and respond using the json as specified in Response Format section.[/INST]\n\nResponse:"
         )
 
         # Interaction Loop
@@ -184,9 +184,9 @@ class TddGPTAgent:
                     print(f"Exception occurred: {e}")
                     print(preprocessed_text)
                     user_input = (
-                        f"{assistant_reply}\n"
+                        f"<</SYS>>\n\n{assistant_reply}\n"
                         f"The response is not a valid json. Determine the next step "
-                        f"and respond using the json format as specified in Response Format section:"
+                        f"and respond using the json format as specified in Response Format section.[/INST]\n\nResonse:"
                     )
                     continue
 
@@ -207,9 +207,9 @@ class TddGPTAgent:
                   print(f"Missing key: {e}")
                   print(assistant_reply)
                   user_input = (
-                      f"{assistant_reply}\n"
+                      f"<</SYS>>\n\n{assistant_reply}\n"
                       f"The response is missing the key '{e}'. Determine the next step "
-                      f"and respond using the json format as specified in Response Forwat section."
+                      f"and respond using the json format as specified in Response Forwat section.[/INST]\n\nResponse:"
                   )
                   continue
 
@@ -243,7 +243,7 @@ class TddGPTAgent:
                         # print(f'-----------\n{observation}\n---------')
 
                         if 'FAIL' in summarized_observation:
-                            human_message = "However, the tests have failed. Try harder. "
+                            human_message = "However, the tests have failed. You can fix it. "
                         else:
                             human_message = "All tests have passed. Good job! "
                     else:
@@ -305,6 +305,6 @@ class TddGPTAgent:
             self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add, 'code': code_str}))
 
             user_input = (
-                f"You have completed step {loop_count}. {human_message}"
-                f"Determine the next step and respond using the json specified in Response Format section."
+                f"<</SYS>>\n\nYou have completed step {loop_count}. {human_message}"
+                f"Determine the next step and respond using the json specified in Response Format section.[/INST]\n\nResponse:"
             )

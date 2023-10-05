@@ -1,5 +1,5 @@
 from langchain.prompts import PromptTemplate
-from langchain.chat_models import ChatOpenAI
+from langchain.llms import LlamaCpp
 from langchain.schema.document import Document
 from langchain.chains import MapReduceDocumentsChain, ReduceDocumentsChain
 from langchain.chains.mapreduce import MapReduceChain
@@ -18,7 +18,18 @@ class TextSummarizer:
             Start with '- I successfully executed the <command> ' """)
 
     def __init__(self, summary_type: str):
-        llm = ChatOpenAI(temperature=0.2, model_name="gpt-3.5-turbo-16k")
+        n_gpu_layers = 1 
+        n_batch = 2048
+        llm = LlamaCpp(
+            model_path="/Users/rajiv/Downloads/projects/llama.cpp/models/TheBloke/CodeLlama-34B-Instruct-GGUF/codellama-34b-instruct.Q4_K_M.gguf",
+            n_ctx=2048,
+            max_tokens=-1,
+            top_p=1,
+            n_gpu_layers=n_gpu_layers,
+            n_batch=n_batch,
+            f16_kv=True,  
+            verbose=False,
+        )
 
         # Define the prompt based on the summary_type
         prompt_template = self.get_prompt_template(summary_type)
