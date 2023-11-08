@@ -197,7 +197,10 @@ class TddGPTAgent:
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
                     print(f'\033[92mDone:\033[0m\n{parsed["thoughts"]["done"]}')
                     print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
-                    print(f'\033[92mTBDs:\033[0m\n{parsed["thoughts"]["tbds"]}')
+                    if isinstance(parsed["thoughts"]["tbds"], list):
+                        print(f'\033[92mTBDs:\033[0m\n' + '\n'.join(parsed["thoughts"]["tbds"]))
+                    else:
+                        print(f'\033[92mTBDs:\033[0m\n{parsed["thoughts"]["tbds"]}')
                     if parsed["command"]["name"] == "cli":
                       commands = parsed['command']['args']['commands']
                       command_str = " && ".join(commands) if isinstance(commands, list) else commands
