@@ -1,10 +1,8 @@
 from agent import TddGPTAgent
 from cli import CLITool
 from langchain.chat_models import ChatOpenAI
-from langchain.llms import OpenAI
 from langchain.tools.file_management.write import WriteFileTool
 from langchain.tools.file_management.read import ReadFileTool
-from langchain.tools import ShellTool
 from langchain.vectorstores import FAISS
 from langchain.docstore import InMemoryDocstore
 from langchain.embeddings import OpenAIEmbeddings
@@ -18,6 +16,7 @@ def parse_args():
 
     # Create an argument parser
     parser = argparse.ArgumentParser(description='Generate code based on user stories')
+    parser.add_argument('--model', type=str, default='gpt-4', help='Model parameter for the agent')
     parser.add_argument('--prompt', type=str, default=default_prompt, help='User stories for the app or file path')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode')
     parser.add_argument('--chat_history_file', type=str, help='Path to chat history file')
@@ -56,8 +55,7 @@ def main():
     agent = TddGPTAgent.from_llm_and_tools(
         output_dir=args.output_dir,
         tools=tools,
-        llm=ChatOpenAI(model='gpt-4-1106-preview', temperature=args.temperature),
-        # llm=ChatOpenAI(model='ft:gpt-3.5-turbo-0613:gimlet:reactjs:80OzaHs0', temperature=0.2),
+        llm=ChatOpenAI(model=args.model, temperature=args.temperature),
         memory=vectorstore.as_retriever(),
         chat_history_memory=chat_history_memory,
     )

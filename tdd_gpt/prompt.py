@@ -17,7 +17,7 @@ import textwrap
 class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
     tools: List[BaseTool]
     token_counter: Callable[[str], int]
-    send_token_limit: int = 4096
+    send_token_limit: int = 128000
     output_dir: Optional[str] = None  
 
     @property
@@ -62,14 +62,15 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         previous_messages = kwargs["messages"]
 
         # Extract code context from previous system messages
-        code_context = [
-            m.additional_kwargs["code"]
-            for m in reversed(previous_messages) 
-            if isinstance(m, SystemMessage) 
-            and "code" in m.additional_kwargs 
-            and len(m.additional_kwargs['code'].strip()) > 0
-        ]
-        code_context_tokens = sum([self.token_counter(code) for code in code_context])
+        code_context = {}
+        for m in reversed(previous_messages):
+            if isinstance(m, SystemMessage):
+                if "code" in m.additional_kwargs and "file_path" in m.additional_kwargs:
+                    if len(m.additional_kwargs['code'].strip()) > 0:
+                        file_path = m.additional_kwargs["file_path"]
+                        code = m.additional_kwargs["code"]
+                        code_context[file_path] = code
+        code_context_tokens = sum([self.token_counter(code) for code in code_context.values()])
 
         # Get the last system message
         last_system_message = next((
@@ -87,10 +88,10 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         # Fit as much code context as possible based on available tokens
         while code_context_tokens > available_tokens:
-            code_context = code_context[:-1]
-            code_context_tokens = sum([self.token_counter(code) for code in code_context])
+            file_path_to_remove = next(iter(code_context))
+            code_context_tokens -= self.token_counter(code_context.pop(file_path_to_remove))
 
-        code_context_str = "\n".join(code_context).strip() if len(code_context) > 0 else "None"
+        code_context_str = "\n".join([code for code in code_context.values()]).strip() if len(code_context) > 0 else "None"
         prompt_suffix = f"Code Context:\n>>>>\n{code_context_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
 
         # Compile the full prompt
@@ -114,7 +115,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         reactjs_instructions = [
             f"Use 'cd {self.output_dir} && CI=true npx create-react-app <app-name>' to initialize the project, if required.",
             'Break the application into smaller reusable components, each responsible for a specific functionality.',
-            'For each component, write the unit tests first. Then write the code so that the tests pass. Start with the main App.',
+            'For each component, write the unit tests first. Then implement it as such that the tests pass at the first go. Start with the main App.',
+            "Take a deep breath and think long and hard before implmentating the functionality. You need to use reasoning and logic at this step.",
             "Avoid using data-testid attributes in the tests; instead use the query functions of React Testing library.",
             "When updating components, make sure to also update the corresponding tests.",
             "Use the act function when testing components that use timers or other asynchronous operations.",

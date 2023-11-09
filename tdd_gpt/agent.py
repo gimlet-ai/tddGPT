@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List, Optional
 from pydantic import ValidationError
-from langchain.chains.llm import LLMChain
+from langchain.chains import LLMChain
 from langchain.chat_models.base import BaseChatModel
 from langchain_experimental.autonomous_agents.autogpt.output_parser import (
     AutoGPTOutputParser,
@@ -275,19 +275,22 @@ class TddGPTAgent:
             }
 
             code_str = ""
+            file_path = ""
             if parsed["command"]["name"] == "read_file":
                 code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{observation}\n```"
+                file_path = parsed["command"]["args"]["file_path"]
 
-                parsed_memory_to_add["Action"] = f'reading file {parsed["command"]["args"]["file_path"]}'
+                parsed_memory_to_add["Action"] = f'reading file {file_path}'
 
-                print(f'\033[92mAction:\033[0m reading file {parsed["command"]["args"]["file_path"]}')
+                print(f'\033[92mAction:\033[0m reading file {file_path}')
                 print(f'\033[92mCode:\033[0m{code_str}\n')
             elif parsed["command"]["name"] == "write_file":
                 code_str = f"\n```\n// {parsed['command']['args']['file_path']}\n{parsed['command']['args']['text']}\n```"
+                file_path = parsed["command"]["args"]["file_path"]
 
-                parsed_memory_to_add["Action"] = f'writing file {parsed["command"]["args"]["file_path"]}'
+                parsed_memory_to_add["Action"] = f'writing file {file_path}'
 
-                print(f'\033[92mAction:\033[0m writing file {parsed["command"]["args"]["file_path"]}')
+                print(f'\033[92mAction:\033[0m writing file {file_path}')
                 print(f'\033[92mCode:\033[0m{code_str}\n')
             elif parsed["command"]["name"] == "cli":
                 parsed_memory_to_add["Action"] = f"executing cli commands '{command_str}'"
@@ -305,7 +308,7 @@ class TddGPTAgent:
                 memory_to_add += f"\nFeedback: {feedback}"
 
             self.memory.add_documents([Document(page_content=memory_to_add)])
-            self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add, 'code': code_str}))
+            self.chat_history_memory.add_message(SystemMessage(content=result, additional_kwargs={'metadata': memory_to_add, 'code': code_str, 'file_path': file_path}))
 
             user_input = (
                 f"You have completed step {loop_count}. {human_message}"
