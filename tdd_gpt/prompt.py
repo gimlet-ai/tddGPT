@@ -17,7 +17,7 @@ import textwrap
 class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
     tools: List[BaseTool]
     token_counter: Callable[[str], int]
-    send_token_limit: int = 128000
+    send_token_limit: int = 4096
     output_dir: Optional[str] = None  
 
     @property
@@ -114,9 +114,9 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         reactjs_instructions = [
             f"Use 'cd {self.output_dir} && CI=true npx create-react-app <app-name>' to initialize the project, if required.",
-            'Break the application into smaller reusable components, each responsible for a specific functionality.',
-            'For each component, write the unit tests first. Then implement it as such that the tests pass at the first go. Start with the main App.',
-            "Take a deep breath and think long and hard before implmentating the functionality. You need to use reasoning and logic at this step.",
+            "Focus on breaking down the application into even smaller, reusable components for better modularity and maintainability.",
+            'For each component, write the unit tests first. Then implement the code based on the tests. Always start with the main App.',
+            "Before implementing the code, take a deep breath and think quietly about how you clear the tests at first go. Use your advanced reasoning abilities.",
             "Avoid using data-testid attributes in the tests; instead use the query functions of React Testing library.",
             "When updating components, make sure to also update the corresponding tests.",
             "Use the act function when testing components that use timers or other asynchronous operations.",
@@ -126,6 +126,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
             'Avoid mutating state directly: instead use the setState/useState hook.',
             'While debugging test failures, think about the error message and refer to the Code Context section to come up with a fix. Be creative.',
+            "Implement robust error handling to manage unexpected user inputs and system failures.",
             "Style the app to make it visually appealing, responsive and user friendly. Use your imagination.",
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',
@@ -153,7 +154,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
                 "reasoning": "reasoning about the plan",
                 "criticism": "constructive self-criticism of the plan",
                 "done": "- short bulleted list\n- of tasks completed\n- in past steps",
-                "plan": "task for this step",
+                "plan": "single task for this step",
                 "tbds": "- bulleted list of\n- tasks to be done\n- in future steps",
             },
             "command": {"name": "command name", "args": {"arg name": "value"}},

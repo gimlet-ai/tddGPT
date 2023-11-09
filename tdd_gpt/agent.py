@@ -39,8 +39,10 @@ class TddGPTAgent:
         tools: List[BaseTool],
         feedback_tool: Optional[HumanInputRun] = None,
         chat_history_memory: Optional[BaseChatMessageHistory] = None,
+        context_window: Optional[int] = None,
     ):
         self.memory = memory
+        self.context_window = context_window
         self.next_action_count = 0
         self.chain = chain
         self.output_parser = output_parser
@@ -59,12 +61,14 @@ class TddGPTAgent:
         human_in_the_loop: bool = False,
         output_parser: Optional[BaseAutoGPTOutputParser] = None,
         chat_history_memory: Optional[BaseChatMessageHistory] = None,
+        context_window: Optional[int] = 4096,
     ) -> TddGPTAgent:
         prompt = TddGPTPrompt(
             tools=tools,
             input_variables=["memory", "messages", "goals", "user_input"],
             token_counter=llm.get_num_tokens,
             output_dir=output_dir,
+            send_token_limit=context_window,
         )
         human_feedback_tool = HumanInputRun() if human_in_the_loop else None
         chain = LLMChain(llm=llm, prompt=prompt)
