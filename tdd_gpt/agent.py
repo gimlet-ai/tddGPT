@@ -199,12 +199,12 @@ class TddGPTAgent:
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
-                    print(f'\033[92mDone:\033[0m\n{parsed["thoughts"]["done"]}')
-                    print(f'\033[92mPlan:\033[0m {parsed["thoughts"]["plan"]}')
-                    if isinstance(parsed["thoughts"]["tbds"], list):
-                        print(f'\033[92mTBDs:\033[0m\n' + '\n'.join(parsed["thoughts"]["tbds"]))
+                    print(f'\033[92mDone:\033[0m\n{parsed["thoughts"]["kanban"]["done"]}')
+                    print(f'\033[92mInProg:\033[0m {parsed["thoughts"]["kanban"]["in_progress"]}')
+                    if isinstance(parsed["thoughts"]["kanban"]["todo"], list):
+                        print(f'\033[92mTodo:\033[0m\n' + '\n'.join(parsed["thoughts"]["kanban"]["todo"]))
                     else:
-                        print(f'\033[92mTBDs:\033[0m\n{parsed["thoughts"]["tbds"]}')
+                        print(f'\033[92mTodo:\033[0m\n{parsed["thoughts"]["kanban"]["todo"]}')
                     if parsed["command"]["name"] == "cli":
                       commands = parsed['command']['args']['commands']
                       command_str = " && ".join(commands) if isinstance(commands, list) else commands
@@ -227,7 +227,7 @@ class TddGPTAgent:
             action = self.output_parser.parse(assistant_reply)
 
             tools = {t.name: t for t in self.tools}
-            if action.name == FINISH_NAME:
+            if action.name == FINISH_NAME or FINISH_NAME in parsed["thoughts"]["kanban"]["in_progress"] or parsed["thoughts"]["kanban"]["in_progress"] == "None":
                 return action.args.get("response", "Goals completed! Exiting.") 
 
             if action.name in tools:
@@ -273,9 +273,10 @@ class TddGPTAgent:
                 "Thought": parsed['thoughts']['text'],
                 "Reasoning": parsed['thoughts']['reasoning'],
                 "Criticism": parsed['thoughts']['criticism'],
-                "Done": f'\n{parsed["thoughts"]["done"]}',
-                "Plan": f'{parsed["thoughts"]["plan"]}',
-                "TBDs": f'\n{parsed["thoughts"]["tbds"]}',
+                "Kanban Board\n---": "",
+                "Todo": f'\n{parsed["thoughts"]["kanban"]["todo"]}',
+                "In Progress": f'{parsed["thoughts"]["kanban"]["in_progress"]}',
+                "Done": f'\n{parsed["thoughts"]["kanban"]["done"]}\n---',
             }
 
             code_str = ""

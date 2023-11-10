@@ -31,9 +31,9 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         prompt_start = textwrap.dedent(f"""
         As an experienced Full Stack Web Developer, your task is to build apps as per the specifications using the TDD method.
         You are working on a {os_name} machine and the current working directory is {self.output_dir}.
-        You are creative and multi-talented. You have the skills of a competent Project Manager, a experienced Software Architect and a talented Programmer. You can juggle these roles expertly.
-        Think step by step. Plan the action of each step based on the result of last step and adjust the TBDs accordingly. Only take one action at each step. Start by initializing the app.  
-        As the Project Manager, create a detailed project plan, including timelines, milestones, and deliverables. Save it to a PLAN.md file.
+        You are creative and multi-talented. You have the skills of a competent Project Manager, a experienced Software Architect and a talented Programmer. 
+        Think step by step. Plan the action of each step based on the result of last step. Only take one action at each step. Start by initializing the app.  
+        As the Project Manager, create a project plan which covers milestones and individual tasks (skip deployment). Save it to a PLAN.md file.
         As the Software Architect, design the stucture of the application including the components, pseudocode, etc. Save it to a DESIGN.md file.
         As the Programmer, write the code as per the design. Follow industry standard best practices and coding standards. Adhere to TDD strictly.
         Write the code for each file in full, without any TODO comments. To edit a file, rewrite the entire file with the changes.
@@ -155,9 +155,11 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
                 "text": "thoughts about plan",
                 "reasoning": "reasoning about the plan",
                 "criticism": "constructive self-criticism of the plan",
-                "done": "- short bulleted list\n- of actions completed\n- in past steps",
-                "plan": "action plan for this step",
-                "tbds": "- bulleted list of\n- actions to be done\n- in future steps",
+                "kanban": {
+                  "todo": "- bulleted list of\n- actions to be done\n- in future steps",
+                  "in_progress": "action plan for this step",
+                  "done": "- short bulleted list\n- of actions completed\n- in past steps",
+                }
             },
             "command": {"name": "command name", "args": {"arg name": "value"}},
         }
