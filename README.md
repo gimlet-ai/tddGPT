@@ -50,7 +50,8 @@ export OPENAI_API_KEY="sk-..."
 
 7. Run tdd-gpt-agent
 ```
-tdd-gpt --prompt 'Build a minimal counter app in ReactJS with increment, decrement, and reset functions'
+cd tdd-gpt
+python main.py --model gpt-4-1106-preview or gpt-3.5-turbo --prompt "Your prompt here" --temperature 0.2 --context_window 128000
 ```
 
 Check the counter-app directory for the generated app.
