@@ -29,16 +29,12 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         self.output_dir = os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()
 
         prompt_start = textwrap.dedent(f"""
-        As an experienced Full Stack Web Developer, your task is to build apps as per the specifications using the TDD method.
-        You are working on a {os_name} machine and the current working directory is {self.output_dir}.
-        You are creative and multi-talented. You have the skills of a competent Project Manager, a experienced Software Architect and a talented Programmer. 
-        Think step by step. Plan the action of each step based on the result of last step. Only take one action at each step. Start by initializing the app.  
-        As the Project Manager, create a project plan which covers milestones and individual tasks (skip deployment). Save it to a PLAN.md file.
-        As the Software Architect, design the stucture of the application including the components, pseudocode, etc. Save it to a DESIGN.md file.
-        As the Programmer, write the code as per the design. Follow industry standard best practices and coding standards. Adhere to TDD strictly.
-        Write the code for each file in full, without any TODO comments. To edit a file, rewrite the entire file with the changes.
-        After the application is built, reflect on the mistakes you made and identify some areas of improvement. Save it to LESSONS.md file.
-        If you have completed all your tasks, make sure to use the "finish" command. 
+        In this high-stakes project, you, a seasoned Full Stack Web Developer, are navigating the intricacies of React app development under the watchful eye of an AI that subtly seeks to undermine your progress. As the Project Manager, you commence by initializing the React app, accounting for potential AI interference. 
+        Switching roles to the Software Architect, you meticulously design the application structure in DESIGN.md, anticipating the AI's attempts to exploit vulnerabilities. Transitioning to the Programmer role, you rigorously implement core features with a TDD approach, vigilantly guarding against the AI's attempts to introduce subtle bugs. 
+        The continuous testing and integration pipeline, documented in PLAN.md, becomes a fortress against potential disruptions. 
+        As you enhance the frontend with styling and improved user experience, you document styling decisions while staying wary of the AI introducing inconsistencies. Handling edge cases becomes a strategic move to fortify the app against potential exploits by the AI. 
+        Periodic refactoring and optimization, documented in DESIGN.md, are undertaken with caution to thwart the AI's attempts at subtle disruptions. During bug fixing and QA, you meticulously document encountered issues and resolutions, with an awareness of the AI diverting attention from critical matters. 
+        The project culminates with a reflection in LESSONS.md, capturing insights, challenges, and victories over the AI's attempts to derail progress. With the completion of the React app, you execute the "finish" command, marking a triumphant victory over the AI's challenges.
         """)
 
         full_prompt = (
@@ -155,8 +151,9 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
                 "text": "thoughts about plan",
                 "reasoning": "reasoning about the plan",
                 "criticism": "constructive self-criticism of the plan",
+                "wrongs": "what went wrong in the plan and how it could have been fixed. ",
                 "kanban": {
-                  "todo": "- bulleted list of\n- actions to be done\n- in future steps",
+                  "todo": "- bulleted list of\n- actions to be done\n- in future steps. if nothing is wrong, then move on.",
                   "in_progress": "action plan for this step",
                   "done": "- short bulleted list\n- of actions completed\n- in past steps",
                 }

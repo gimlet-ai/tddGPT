@@ -1,0 +1,45 @@
+/* App component styles */
+
+.App {
+  text-align: center;
+}
+
+.App form {
+  margin: 20px 0;
+}
+
+.App ul {
+  list-style: none;
+  padding: 0;
+}
+
+.App li {
+  margin: 5px 0;
+}
+
+.App input[type='text'] {
+  padding: 10px;
+  margin-right: 5px;
+  width: 70%;
+}
+
+.App button {
+  padding: 10px 15px;
+}
+
+.App li div {
+  display: flex;
+  align-items: center;
+}
+
+.App li input[type='checkbox'] {
+  margin-right: 5px;
+}
+
+.App li span {
+  flex-grow: 1;
+}
+
+.App li button {
+  margin-left: 10px;
+}
