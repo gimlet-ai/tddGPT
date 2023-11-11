@@ -280,7 +280,7 @@ class TddGPTAgent:
                 "Criticism": parsed['thoughts']['criticism'],
                 "Kanban": {
                   "Todo": parsed["thoughts"]["kanban"]["todo"],
-                  "In Progress": parsed["thoughts"]["kanban"]["in_progress"],
+                  "InProgress": parsed["thoughts"]["kanban"]["in_progress"],
                   "Done": parsed["thoughts"]["kanban"]["done"],
                 }
             }

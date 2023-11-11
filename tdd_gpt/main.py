@@ -78,10 +78,11 @@ def main():
         response = client.chat.completions.create(
             model="gpt-4-vision-preview",
             messages=[
+                {"role": "system", "content": "You are an expert ReactJS UI/UX Designer."},
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Convert this image to a set of user stories which can be used to build a clone of  this app with the same UI/UX"},
+                        {"type": "text", "text": "Analyze the attached image which is a screenshot of an application and describe the layout, UI components, and their functionalities in detail. Based on the description, identify and write user stories highlighting how a user would interact with these UI components. Translate the identified UI components into a basic outline of React components, including necessary props and state elements. Extract style elements like color, size, and spacing from the description and create a CSS stylesheet for the React components in full without skipping anything with comments. Start with, build a ReactJS application with the following specs."},
                         {"type": "image", "image": encoded_string.decode("utf-8")},
                     ],
                 }
