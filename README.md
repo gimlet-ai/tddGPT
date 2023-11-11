@@ -30,12 +30,12 @@ python3 -m venv env
   ```
 3. Clone the repository to your local machine:
 ```
-git clone git@github.com:gimlet-ai/tdd-gpt-agent.git
+git clone https://github.com/sankethchebbi/tddGPT.git
 
 ```
 4. Navigate to the project directory:
 ```
-cd tdd-gpt-agent
+cd tddGPT
 ```
 
 5. Run the following command to install the package and its dependencies:
@@ -48,7 +48,7 @@ python setup.py install
 export OPENAI_API_KEY="sk-..."
 ```
 
-7. Run tdd-gpt-agent
+7. Run the main.py
 ```
 cd tdd-gpt
 python main.py --model gpt-4-1106-preview or gpt-3.5-turbo --prompt "Your prompt here" --temperature 0.2 --context_window 128000
