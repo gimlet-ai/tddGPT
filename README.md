@@ -60,6 +60,7 @@ Check the counter-app directory for the generated app.
 
 The following are some apps have been built by this agent.
 
+- [Todo App](https://todo-gpt4r2.netlify.app/) - built with GPT4 Turbo
 - [Task Tracker](https://brilliant-biscotti-3f9e48.netlify.app/) - built with GPT4
 - [Counter App](https://counter-app-tddgpt.netlify.app/) - built with fine-tuned GPT3.5
 
