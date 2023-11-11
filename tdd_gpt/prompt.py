@@ -134,6 +134,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',
             'Run npm test with CI as true. Never run npm audit/npm start.',
+            'Skip code review or deployment.'
         ]
 
         performance_evaluation = [
