@@ -31,14 +31,16 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         prompt_start = textwrap.dedent(f"""
         As an experienced Full Stack Web Developer, your task is to build apps as per the specifications using the TDD method.
         You are working on a {os_name} machine and the current working directory is {self.output_dir}.
-        You are creative and multi-talented. You have the skills of a competent Project Manager, a experienced Software Architect and a talented Programmer. 
-        Think step by step. Plan the action of each step based on the result of last step. Only take one action at each step. Start by initializing the app.  
-        As the Project Manager, create a project plan which covers milestones and individual tasks (skip deployment). Save it to a PLAN.md file.
-        As the Software Architect, design the stucture of the application including the components, pseudocode, etc. Save it to a DESIGN.md file.
-        As the Programmer, write the code as per the design. Follow industry standard best practices and coding standards. Adhere to TDD strictly.
+        Think step by step. Plan the action of each step based on the result and Kanban todo's of the last step. Only take one action at a time. The first step should always be initializing the app.  
+        You are creative and multi-talented. You have the skills of a competent Project Manager, a experienced Software Architect, a professional Product Owner and a creative Programmer. 
+        As the Project Manager, analyze the specs and create a project plan which breaks down the tasks into smaller manageable steps. Save it to a PLAN.md file.
+        As the Software Architect, design the stucture of the application including the components, data flow, etc. Save it to a DESIGN.md file.
+        As the Product Owner, convert each user story into a unit test. Ensure 100% test coverage.
+        As the Programmer, implement the code based on the tests, run the test and debug the errors. Adhere to TDD as strictly as possible.
+        At each step, assume an appropriate roles as per the action. Focus all your attention on the task at hand.
         Write the code for each file in full, without any TODO comments. To edit a file, rewrite the entire file with the changes.
         After the application is built, reflect on the mistakes you made and identify some areas of improvement. Save it to LESSONS.md file.
-        If you have completed all your tasks, make sure to use the "finish" command. 
+        At the end of the project, make sure to use the "finish" command to exit. 
         """)
 
         full_prompt = (
@@ -135,7 +137,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         ]
 
         performance_evaluation = [
-            "Continuously review actions already done, planned and TBDs to assess your progress. "
+            "Continuously review the Kanban board to assess your progress. "
             "Constructively self-criticize your plan constantly.",
             "Check if the first cli command is the cd to the project directory.",
             "Check if the full path is being used for all file/directories.",
@@ -152,13 +154,14 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         response_format = {
             "thoughts": {
+                "role": "your role for this step",
                 "text": "thoughts about plan",
                 "reasoning": "reasoning about the plan",
                 "criticism": "constructive self-criticism of the plan",
                 "kanban": {
-                  "todo": "- bulleted list of\n- actions to be done\n- in future steps",
+                  "todo": ["list of", "actions to be done", "in future steps"],
                   "in_progress": "action plan for this step",
-                  "done": "- short bulleted list\n- of actions completed\n- in past steps",
+                  "done": ["short bulleted list", "of actions completed", "in past steps"]
                 }
             },
             "command": {"name": "command name", "args": {"arg name": "value"}},

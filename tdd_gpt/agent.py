@@ -196,13 +196,17 @@ class TddGPTAgent:
 
             if parsed:
                 try:
+                    print(f'\033[92mRole:\033[0m {parsed["thoughts"]["role"]}')
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
-                    print(f'\033[92mDone:\033[0m\n{parsed["thoughts"]["kanban"]["done"]}')
+                    if isinstance(parsed["thoughts"]["kanban"]["done"], list):
+                        print(f'\033[92mDone:\033[0m\n' + '\n'.join('- ' + item for item in parsed["thoughts"]["kanban"]["done"]))
+                    else:
+                        print(f'\033[92mDone:\033[0m\n{parsed["thoughts"]["kanban"]["done"]}')
                     print(f'\033[92mInProg:\033[0m {parsed["thoughts"]["kanban"]["in_progress"]}')
                     if isinstance(parsed["thoughts"]["kanban"]["todo"], list):
-                        print(f'\033[92mTodo:\033[0m\n' + '\n'.join(parsed["thoughts"]["kanban"]["todo"]))
+                        print(f'\033[92mTodo:\033[0m\n' + '\n'.join('- ' + item for item in parsed["thoughts"]["kanban"]["todo"]))
                     else:
                         print(f'\033[92mTodo:\033[0m\n{parsed["thoughts"]["kanban"]["todo"]}')
                     if parsed["command"]["name"] == "cli":
@@ -270,13 +274,15 @@ class TddGPTAgent:
 
             parsed_memory_to_add = {
                 "Step": loop_count,
+                "Role": parsed['thoughts']['role'],
                 "Thought": parsed['thoughts']['text'],
                 "Reasoning": parsed['thoughts']['reasoning'],
                 "Criticism": parsed['thoughts']['criticism'],
-                "Kanban Board\n---": "",
-                "Todo": f'\n{parsed["thoughts"]["kanban"]["todo"]}',
-                "In Progress": f'{parsed["thoughts"]["kanban"]["in_progress"]}',
-                "Done": f'\n{parsed["thoughts"]["kanban"]["done"]}\n---',
+                "Kanban": {
+                  "Todo": parsed["thoughts"]["kanban"]["todo"],
+                  "In Progress": parsed["thoughts"]["kanban"]["in_progress"],
+                  "Done": parsed["thoughts"]["kanban"]["done"],
+                }
             }
 
             code_str = ""
@@ -303,7 +309,7 @@ class TddGPTAgent:
 
                 print(f'\033[92mResult:\033[0m\n{summarized_observation}\n')
 
-            memory_to_add = '\n'.join([f'{k}: {v}' for k, v in parsed_memory_to_add.items()])
+            memory_to_add = f'```json\n{json.dumps(parsed_memory_to_add, indent=4)}\n```'
 
             if self.feedback_tool is not None:
                 feedback = f"\n{self.feedback_tool.run('Input: ')}"
