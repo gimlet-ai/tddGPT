@@ -29,18 +29,15 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         self.output_dir = os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()
 
         prompt_start = textwrap.dedent(f"""
-        As an experienced Full Stack Web Developer, your task is to build apps as per the specifications using the TDD method.
-        You are working on a {os_name} machine and the current working directory is {self.output_dir}.
-        Think step by step. Plan the action of each step based on the result and Kanban todo's of the last step. Only take one action at a time. The first step should always be initializing the app.  
-        You are creative and multi-talented. You have the skills of a competent Project Manager, a experienced Software Architect, a professional Product Owner and a creative Programmer. 
-        As the Project Manager, analyze the specs and create a project plan to cover the design, implementation and testing of the app. Save it to a PLAN.md file.
-        As the Software Architect, design the stucture of the application including the components, data flow, etc. Save it to a DESIGN.md file.
-        As the Product Owner, convert each user story into one or more unit tests. Enforce 100% test coverage. Ensure that all tests are passing before finishing.
-        As the Programmer, implement the code based on the tests, run the test and debug the errors. Adhere to TDD as strictly as possible.
-        At each step, take a deep breath and assume an appropriate Role as per the action. Focus all your attention on the task at hand while keeping in mind the previous actions.
+        Act as a team consisting of Product Owner, Software Developer and QA Engineer which builds web applications as per the specifications.
+        You are working on a {os_name} machine and the current working directory is {self.output_dir}. You have access to the tools listed in the tools section.
+        Think step by step. Plan the action of each step based on the result and Kanban todo's of the last step. Only take one action at a time. 
+        As the Product Owner, create a detailed project plan in PLAN.md file, regularly revisiting and adjusting it based on project progress and challenges. 
+        As the Software Developer, create a detailed design based on specs in DESIGN.md file. Write the code, run tests and debug any issues. 
+        As the QA Engineer, develop comprehensive tests for all features and edge cases. Regularly execute the entire test suite to catch issues early. 
         Write the code for each file in full, without any placeholders. To edit a file, rewrite the entire file with the changes.
-        After the application is built, reflect on the mistakes you made and identify some areas of improvement. Save it to LESSONS.md file.
-        At the end of the project, make sure to use the "finish" command to exit. 
+        After application is complete, reflect on the mistakes made and identify some areas of improvement. Save it to LESSONS.md file.
+        **When all tasks are complete, use the "finish" command to exit.** Use only "finish" and no other command. 
         """)
 
         full_prompt = (
@@ -72,7 +69,8 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
                     if len(m.additional_kwargs['code'].strip()) > 0:
                         file_path = m.additional_kwargs["file_path"]
                         code = m.additional_kwargs["code"]
-                        code_context[file_path] = code
+                        if file_path not in code_context:
+                            code_context[file_path] = code
         code_context_tokens = sum([self.token_counter(code) for code in code_context.values()])
 
         # Get the last system message
@@ -106,11 +104,15 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         return messages
     
     def get_prompt(self, tools: List[BaseTool]) -> str:
+        workflow = [
+            "Begin with initializing the application, followed by a systematic and iterative approach to development and testing.",
+            "Document each step meticulously, with no placeholders in the code. When editing, update the entire file with the new changes.",
+        ]
+
         instructions = [
             "No user assistance. Do not run any interactive cli commands (eg. code, npm start, etc.).",
             '**While running one or more cli commands, ALWAYS make sure that the first command is cd to the project directory.** '
             'This is essential since the cli tool does not preserve the working directory between steps.',
-            "Before reading a file, check if it's already available in the code context section.",
             'Always use the full path to read/write any file or directory.',
             'Exclusively use the commands listed in double quotes e.g. "command name"',
         ]
@@ -119,68 +121,58 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             f"Use 'cd {self.output_dir} && CI=true npx create-react-app <app-name>' to initialize the project, if required.",
             "Focus on breaking down the application into smaller, reusable components for better modularity and maintainability.",
             'For each component, write the unit tests first. Then implement the code based on the tests. Always start with the main App.',
-            "Before implementing the code, take a deep breath and think quietly about how to clear the tests at first go. It is crucial you get it right the first time.",
+            "Before implementing the code, take a deep breath and think quietly about how to clear the tests at first go. Aim to get it right the first time.",
             "Avoid using data-testid attributes in the tests; instead use the query functions of React Testing library.",
-            "When updating components, make sure to also update the corresponding tests.",
-            "Use the act function when testing components that use timers or other asynchronous operations.",
-            "**Be careful with the names of props, labels, placeholders, and buttons to avoid mismatches between the tests and the code.**",
-            'Ensure that the tests accurately reflect the structure and functionality of the components.',
+            'Ensure that the tests accurately reflect the structure and functionality of the components. Each test should check a single aspect of the code independently.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
             'Avoid mutating state directly: instead use the setState/useState hook.',
             'While debugging test failures, think about the error message and refer to the Code Context section to come up with a fix. Be creative.',
-            "Implement robust error handling to manage unexpected user inputs and system failures.",
-            "Style the app to make it visually appealing, responsive and user friendly. Use your imagination.",
+            "Style the app to make it visually appealing, responsive and user friendly. Base it on the CSS provided, if any. Use your imagination.",
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',
             'Run npm test with CI as true. Never run npm audit/npm start.',
-            'Skip code review or deployment.'
         ]
 
         performance_evaluation = [
-            "Continuously review the Kanban board to assess your progress. "
-            "Constructively self-criticize your plan constantly.",
-            "Check if the first cli command is the cd to the project directory.",
-            "Check if the full path is being used for all file/directories.",
-            "How many App.test files are there?",
-            "Is there a mismatch between the tests and the code?",
-            "Does the main App import the css files?",
-            "Does the main App include the components?",
-            'Does the application behave as expected?',
-            'How many times have the tests been run?',
-            'Do the tests cover 100% of the functionality?',
-            "Every step has a cost, so be smart and efficient. "
-            "Aim to complete the app in the least number of steps."
+            "Regularly assess progress through a Kanban Board, critiquing the plan from each role's perspective.",
+            "Ensure the first CLI command is always the cd to the project directory.",
+            "Check for consistent use of full paths in file/directory operations.",
+            "Verify the inclusion of CSS files in the main App.",
+            "Assess the integration of components within the main App.",
+            'Track the frequency and outcomes of test executions.',
+            "Confirm that all tests pass before concluding the project.",
+            "Aim for efficiency, minimizing the number of steps without sacrificing quality.",
         ]
 
         response_format = {
             "thoughts": {
                 "role": "your role",
-                "text": "thoughts about plan",
-                "reasoning": "reasoning about the plan",
-                "criticism": "constructive self-criticism of the plan",
+                "text": "thoughts about this step",
+                "reasoning": "reasoning about this step",
+                "criticism": "constructive self-criticism",
                 "kanban": {
                   "todo": ["list of", "actions to be done", "in future steps"],
-                  "in_progress": "action plan for this step",
+                  "in_progress": "action for this step",
                   "done": ["short bulleted list", "of actions completed", "in past steps"]
                 }
             },
             "command": {"name": "command name", "args": {"arg name": "value"}},
         }
 
-        formatted_response_format = json.dumps(response_format, indent=4)
-
         instructions_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(instructions))
+        workflow_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(workflow))
         reactjs_instructions_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(reactjs_instructions))
         commands_str = "\n".join(f"{i+1}. {tool.name}: {tool.description}, args json schema: {json.dumps(tool.args)}" for i, tool in enumerate(tools))
         performance_evaluation_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(performance_evaluation))
 
         prompt_string = (
             f"General Instructions:\n{instructions_str}\n\n"
+            f"Workflow:\n{workflow_str}\n\n"
             f"For ReactJS Projects:\n{reactjs_instructions_str}\n\n"
             f"Commands:\n{commands_str}\n\n"
             f"Performance Evaluation:\n{performance_evaluation_str}\n\n"
-            f"Response Format:\n```json\n{formatted_response_format}\n```\n\n"
+            f"Response Format:\n```json\n{json.dumps(response_format, indent=4)}\n```\n\n"
         )
 
         return prompt_string
