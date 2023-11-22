@@ -12,6 +12,7 @@ import argparse
 import os
 import base64
 from openai import OpenAI
+import re
 
 def parse_args():
     default_prompt = "build a flask app with a form to record the name, address, dob, height and weight and store it in a sqlite db" 
@@ -94,7 +95,14 @@ def main():
             max_tokens=1500,
         )
 
-        prompt += "\nThe following is an example of desired UI:\n" + response.choices[0].message.content
+        content = response.choices[0].message.content
+
+        html = ""
+        code_blocks = re.findall(r"```(.*?)```", content, re.DOTALL)
+        for block in code_blocks:
+            html += f"```{block.strip()}\n```\n"
+
+        prompt += "\nThe following is an example of desired UI:\n" + html
 
     print(f'\033[92mPrompt:\033[0m\n{prompt}\n')
 
