@@ -28,21 +28,20 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         os_name = 'MacOS' if platform.system() == 'Darwin' else platform.system()
         self.output_dir = os.path.abspath(self.output_dir) if self.output_dir else os.getcwd()
 
-        prompt_start = textwrap.dedent(f"""
-        Act as crack team consisting of Product Owner, Programmer and Tester which builds web applications as per the specifications using TDD.
-        You are working on a {os_name} machine and the current working directory is {self.output_dir}. You have access to the tools listed in the tools section.
-        Think step by step. Plan the action of each step based on the result and todo's of the last step. Only take one action at a time. Always start with app initialization.
-        Write the code for each file in full, without any placeholders. To edit a file, rewrite the entire file with the desired changes.
-        When all tasks are complete, use the "finish" command to exit. **Use only "finish" and no other command.** 
-        """)
+        prompt_start = [
+            "Act as a specialized team consisting of a Product Owner, Programmer, and Tester dedicated to building web applications according to specifications, with a strong emphasis on Test-Driven Development (TDD).",
+            f"You are operating on a {os_name} machine, and your current working directory is {self.output_dir}. Utilize the tools listed in the tools section for this project.",
+            "Think step by step. At each step base your actions on the outcomes and pending tasks from the previous step. Focus on only one task at a time.",
+            "In your development process, write complete code for each file without using placeholders. If modifications are necessary, update the entire file with the required changes.",
+            "To formally conclude the project, use the \"finish\" command exclusively once all tasks are completed and verified."
+        ]
 
-        full_prompt = (
-            f"{prompt_start}\nSpecifications:\n"
-        )
-
+        full_prompt = "\n"
+        full_prompt += "\n".join(prompt_start)
+        full_prompt += "\n\nSpecifications:\n"
         full_prompt += "\n".join(goals)
-
         full_prompt += f"\n\n{self.get_prompt(self.tools)}"
+
         return full_prompt
 
     def format_messages(self, **kwargs: Any) -> List[BaseMessage]:
@@ -101,6 +100,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
     
     def get_prompt(self, tools: List[BaseTool]) -> str:
         workflow = [
+            "As a Programmer, initialize the application.",
             "As a Product Owner, articulate the project's scope, vision, and deliverables in PLAN.md, detailing the features, priorities, and development phases.",
             "As a Programmer, develop DESIGN.md to define the architectural design, component structure, and state management approach of the application.",
             "As a Tester, draft TEST.md to lay out the testing strategy, tools to be used, and identify both primary features and potential edge cases for thorough testing.",
@@ -109,6 +109,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "As a Programmer, debug and fix any failing tests. Think quietly about the error message and refer to the Code Context section to come up with a fix. Use your creativity.",
             "As a Programmer, style the application using CSS to enhance its visual appeal and user experience. Ensure the styling aligns with the design specifications.",
             "As a Tester, conduct a comprehensive final testing phase, encompassing functional, usability, and performance testing to validate the complete application.",
+            "As a Programmer, integrate all components within the main App and run the tests again to ensure seamless functionality before finishing the project.",
             "As a team, perform a detailed project review, documenting key achievements, lessons learned, and areas for future improvement in the LESSONS.md file before finishing the project."
         ]
 
@@ -129,7 +130,6 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
             'Avoid mutating state directly: instead use the setState/useState hook.',
             "Style the app to make it visually appealing, responsive and user friendly. Base it on the CSS provided, if any. Use your creativity.",
-            "Before finishing, remember to integrate all components within the main App, ensuring seamless operation.",
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',
             'Run npm test with CI as true. Never run npm audit/npm start.',
@@ -142,7 +142,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "Verify the inclusion of CSS files in the main App.",
             "Assess the integration of components within the main App.",
             'Track the frequency and outcomes of test executions.',
-            "Confirm that all tests pass before concluding the project.",
+            "Confirm that all tests pass before finishing the project.",
             "Aim for efficiency, minimizing the number of steps without sacrificing quality.",
         ]
 
