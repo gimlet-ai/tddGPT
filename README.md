@@ -4,9 +4,11 @@
 
 [![tddGPT: ReactJS Counter App with GPT3.5](https://cdn.loom.com/sessions/thumbnails/7f56ab1b478049baa299813c223526bd-with-play.gif)](https://www.loom.com/share/7f56ab1b478049baa299813c223526bd)
 
-tddGPT is an autonomous coding agent that builds applications in ReactJS, Flask, Express, and more, all while adhering to the Test-Driven Development (TDD) methodology. It operates entirely without human intervention. Beginning with a project plan, tddGPT translates requirements into tests, develops code based on those tests, and debugs until all tests pass. Currently, it can build simple CRUD apps. The TDD framework keeps the agent focused and goal-oriented.
+tddGPT is an autonomous coding agent that builds applications in ReactJS, Flask, Express, and more, all while adhering to the Test-Driven Development (TDD) methodology. It operates entirely without human intervention. Beginning with a project plan, tddGPT translates requirements into tests, develops code based on those tests, and debugs until all tests pass. The TDD framework keeps the agent focused and goal-oriented.
 
-The core architecture is elegantly simple, utilizing just three tools: CLI, ReadFile, and WriteFile. It has been adpated from Langchain's AutoGPT example. Most enhancements were performed by GPT-4 itself over the course of a month-long chat interaction. I initially aimed to test the boundaries of GPT-4's capabilities in building ReactJS apps, and was successful in teaching it to construct applications step by step. In the process, it gained an understanding of temporal concepts like past, present, and future, as well as cause and effect.
+The core architecture is elegantly simple, utilizing just three tools: CLI, ReadFile, and WriteFile. It has been adpated from Langchain's AutoGPT example. Most enhancements were performed by ChatGPT Plus itself over the course of a month-long chat. The initially aim was to test the limits of GPT-4's capabilities in building ReactJS apps end-to-end. In the process, it gained an understanding of temporal concepts like past, present, and future, as well as cause and effect.
+
+Utilizing GPT-4 Turbo and GPT-4 Vision, the system is capable of transforming wireframes or screenshots, in conjunction with detailed user stories, into fully functional applications, complete with all necessary tests. The expanded context window of GPT-4 Turbo facilitates its functioning as an integrated team comprising a Product Owner, Programmer, and Tester. This enhanced capacity allows for the handling of significantly more intricate and detailed user stories.
 
 The agent is not just a code generator; it’s also a learner. It evaluates its mistakes and areas for improvement as a final step, and some of these insights have already been incorporated into its operating prompts.
 
@@ -60,7 +62,7 @@ Check the counter-app directory for the generated app.
 
 The following are some apps have been built by this agent.
 
-- [Todo App](https://todo-gpt4r2.netlify.app/) - built with GPT4 Turbo
+- [Todo App](https://todo-app-tv1.netlify.app/) - built with GPT4 Turbo + GPT4-V
 - [Task Tracker](https://brilliant-biscotti-3f9e48.netlify.app/) - built with GPT4
 - [Counter App](https://counter-app-tddgpt.netlify.app/) - built with fine-tuned GPT3.5
 
