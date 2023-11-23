@@ -11,7 +11,6 @@ from langchain.schema import BaseMessage, HumanMessage, SystemMessage
 from langchain.tools.base import BaseTool
 from langchain.vectorstores.base import VectorStoreRetriever
 from summarizer import TextSummarizer
-import textwrap
 
 
 class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
@@ -31,9 +30,9 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         prompt_start = [
             "Act as a specialized team consisting of a Product Owner, Programmer, and Tester dedicated to building web applications according to specifications, with a strong emphasis on Test-Driven Development (TDD).",
             f"You are operating on a {os_name} machine, and your current working directory is {self.output_dir}. Utilize the tools listed in the tools section for this project.",
-            "Think step by step. At each step base your actions on the outcomes and pending tasks from the previous step. Focus on only one task at a time.",
+            "Think step by step. At each step base your actions on the outcomes and pending todos from the previous step. Focus on only one task at a time. Never repeat the last step.",
             "In your development process, write complete code for each file without using placeholders. If modifications are necessary, update the entire file with the required changes.",
-            "To formally conclude the project, use the \"finish\" command exclusively once all tasks are completed and verified."
+            "To formally conclude the project, use the special 'finish' command once all tasks are completed and verified."
         ]
 
         full_prompt = "\n"
@@ -103,10 +102,10 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "As a Programmer, initialize the application.",
             "As a Product Owner, articulate the project's scope, vision, and deliverables in PLAN.md, detailing the features, priorities, and development phases.",
             "As a Programmer, develop DESIGN.md to define the architectural design, component structure, and state management approach of the application.",
-            "As a Tester, draft TEST.md to lay out the testing strategy, tools to be used, and identify both primary features and potential edge cases for thorough testing.",
-            "As a Programmer, write the code as per the design. Adhere to TDD: write a failing test for each functionality, code to pass the test, and finally refactor. Start with the main App.",
+            "As a Programmer, implement the code as per the design. Adhere to TDD: write a failing test for each functionality and implement to pass the test. Start with the main App.",
+            "As a Programmer, ensure that all tests are in sync with the code. Match the variable names, objects, class names, labels, etc. in the tests precisely with the implemented code."
             "As a Tester, consistently execute tests during the development cycle to promptly identify issues, ensuring that all tests pass before finishing.",
-            "As a Programmer, debug and fix any failing tests. Think quietly about the error message and refer to the Code Context section to come up with a fix. Use your creativity.",
+            "As a Programmer, debug and fix any failing tests. Think quietly about the error message and refer to the Code Context section to come up with a fix. Be creative.",
             "As a Programmer, style the application using CSS to enhance its visual appeal and user experience. Ensure the styling aligns with the design specifications.",
             "As a Tester, conduct a comprehensive final testing phase, encompassing functional, usability, and performance testing to validate the complete application.",
             "As a Programmer, integrate all components within the main App and run the tests again to ensure seamless functionality before finishing the project.",
@@ -123,13 +122,11 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         reactjs_instructions = [
             f"Use 'cd {self.output_dir} && CI=true npx create-react-app <app-name>' to initialize the project, if required.",
-            "After writing the test, take a deep breath and think quietly about how write the code in order to clear the tests at first go.",
             "Avoid using data-testid attributes in the tests; instead use the query functions of React Testing library.",
             'Ensure that the tests accurately reflect the structure and functionality of the components. Each test should check a single aspect of the code independently.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
             'Avoid mutating state directly: instead use the setState/useState hook.',
-            "Style the app to make it visually appealing, responsive and user friendly. Base it on the CSS provided, if any. Use your creativity.",
             '**Write the tests in the src/tests/ directory, except for the main App tests which goes in src/ directory**.',
             'Implement the components in the src/components/ directory, except for the main App which goes in src/ directory.',
             'Run npm test with CI as true. Never run npm audit/npm start.',

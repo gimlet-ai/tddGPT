@@ -92,7 +92,7 @@ def main():
                     ],
                 }
             ],
-            max_tokens=1500,
+            max_tokens=4096,
         )
 
         content = response.choices[0].message.content
