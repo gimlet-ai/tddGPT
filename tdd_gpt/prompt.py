@@ -35,9 +35,9 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "To formally conclude the project, use the special 'finish' command once all tasks are completed and verified."
         ]
 
-        full_prompt = "\n"
+        full_prompt  = "\n"
         full_prompt += "\n".join(prompt_start)
-        full_prompt += "\n\nSpecifications:\n"
+        full_prompt += "\n\n## Specifications:\n"
         full_prompt += "\n".join(goals)
         full_prompt += f"\n\n{self.get_prompt(self.tools)}"
 
@@ -87,7 +87,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             code_context_tokens -= self.token_counter(code_context.pop(file_path_to_remove))
 
         code_context_str = "\n".join([code for code in code_context.values()]).strip() if len(code_context) > 0 else "None"
-        prompt_suffix = f"Code Context:\n>>>>\n{code_context_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
+        prompt_suffix = f"## Code Context:\n{code_context_str}\n\n## Last Step:\n{last_step}\n\n"
 
         # Compile the full prompt
         full_prompt = base_prompt.content + prompt_suffix
@@ -165,12 +165,12 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         performance_evaluation_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(performance_evaluation))
 
         prompt_string = (
-            f"General Instructions:\n{instructions_str}\n\n"
-            f"Workflow:\n{workflow_str}\n\n"
-            f"ReactJS Instructions:\n{reactjs_instructions_str}\n\n"
-            f"Commands:\n{commands_str}\n\n"
-            f"Performance Evaluation:\n{performance_evaluation_str}\n\n"
-            f"Response Format:\n```json\n{json.dumps(response_format, indent=4)}\n```\n\n"
+            f"## General Instructions:\n{instructions_str}\n\n"
+            f"## Workflow:\n{workflow_str}\n\n"
+            f"## ReactJS Instructions:\n{reactjs_instructions_str}\n\n"
+            f"## Commands:\n{commands_str}\n\n"
+            f"## Performance Evaluation:\n{performance_evaluation_str}\n\n"
+            f"## Response Format:\n```json\n{json.dumps(response_format, indent=4)}\n```\n\n"
         )
 
         return prompt_string
