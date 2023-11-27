@@ -35,9 +35,9 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             "To formally conclude the project, use the special 'finish' command once all tasks are completed and verified."
         ]
 
-        full_prompt  = "\n"
+        full_prompt = "\n"
         full_prompt += "\n".join(prompt_start)
-        full_prompt += "\n\n## Specifications:\n"
+        full_prompt += "\n\nSpecifications:\n"
         full_prompt += "\n".join(goals)
         full_prompt += f"\n\n{self.get_prompt(self.tools)}"
 
@@ -87,7 +87,7 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
             code_context_tokens -= self.token_counter(code_context.pop(file_path_to_remove))
 
         code_context_str = "\n".join([code for code in code_context.values()]).strip() if len(code_context) > 0 else "None"
-        prompt_suffix = f"## Code Context:\n{code_context_str}\n\n## Last Step:\n{last_step}\n\n"
+        prompt_suffix = f"Code Context:\n>>>>\n{code_context_str}\n<<<<\n\nLast Step:\n>>>>\n{last_step}\n<<<<\n"
 
         # Compile the full prompt
         full_prompt = base_prompt.content + prompt_suffix
@@ -100,15 +100,15 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
     def get_prompt(self, tools: List[BaseTool]) -> str:
         workflow = [
             "As a Programmer, initialize the application.",
-            "As a Product Owner, articulate the project's scope, vision, and deliverables in PLAN.md, detailing the features, priorities, and development phases.",
+            "As a Product Owner, articulate the project's scope, vision, and deliverables in PLAN.md, detailing the features, priorities, development phases and milestones. Update the Kanban accordingly.",
             "As a Programmer, develop DESIGN.md to define the architectural design, component structure, and state management approach of the application.",
-            "As a Programmer, implement the code as per the design. Adhere to TDD: write a failing test for each functionality and implement to pass the test. Start with the main App.",
-            "As a Programmer, ensure that all tests are in sync with the code. Match the variable names, objects, class names, labels, etc. in the tests precisely with the implemented code."
-            "As a Tester, consistently execute tests during the development cycle to promptly identify issues, ensuring that all tests pass before finishing.",
-            "As a Programmer, debug and fix any failing tests. Think quietly about the error message and refer to the Code Context section to come up with a fix. Be creative.",
+            "As a Programmer, implement the code as per the design. Strictly adhere to TDD: write a failing test for each functionality and then implement the code to pass the test. Start with the main App.",
+            "As a Programmer, ensure that all the variable names, objects, class id's, class names, data attrs, labels, placeholders, etc. in the tests match precisely with the implemented code."
+            "As a Tester, execute tests after each milestone is complete so as to identify issues early.",
+            "As a Programmer, debug the test failures. Think quietly about the error message and lookup the code in the Code Context section to come up with a fix. Use your creativity.",
             "As a Programmer, style the application using CSS to enhance its visual appeal and user experience. Ensure the styling aligns with the design specifications.",
-            "As a Tester, conduct a comprehensive final testing phase, encompassing functional, usability, and performance testing to validate the complete application.",
-            "As a Programmer, integrate all components within the main App and run the tests again to ensure seamless functionality before finishing the project.",
+            "As a Programmer, integrate all the components and css files within the main App before finishing the project.",
+            "As a Tester, ensure that the all the tests are in the passing state before finishing the project. Run the tests one final time to confirm.",
             "As a team, perform a detailed project review, documenting key achievements, lessons learned, and areas for future improvement in the LESSONS.md file before finishing the project."
         ]
 
@@ -122,7 +122,6 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
 
         reactjs_instructions = [
             f"Use 'cd {self.output_dir} && CI=true npx create-react-app <app-name>' to initialize the project, if required.",
-            "Avoid using data-testid attributes in the tests; instead use the query functions of React Testing library.",
             'Ensure that the tests accurately reflect the structure and functionality of the components. Each test should check a single aspect of the code independently.',
             'Keep the data flow unidirectional by passing data and callbacks to child components via props.',
             'Use functional components and leverage hooks to manage state, perform side effects, and share data respectively.',
@@ -165,12 +164,12 @@ class TddGPTPrompt(BaseChatPromptTemplate, BaseModel):
         performance_evaluation_str = "\n".join(f"{i+1}. {item}" for i, item in enumerate(performance_evaluation))
 
         prompt_string = (
-            f"## General Instructions:\n{instructions_str}\n\n"
-            f"## Workflow:\n{workflow_str}\n\n"
-            f"## ReactJS Instructions:\n{reactjs_instructions_str}\n\n"
-            f"## Commands:\n{commands_str}\n\n"
-            f"## Performance Evaluation:\n{performance_evaluation_str}\n\n"
-            f"## Response Format:\n```json\n{json.dumps(response_format, indent=4)}\n```\n\n"
+            f"General Instructions:\n{instructions_str}\n\n"
+            f"Workflow:\n{workflow_str}\n\n"
+            f"ReactJS Instructions:\n{reactjs_instructions_str}\n\n"
+            f"Commands:\n{commands_str}\n\n"
+            f"Performance Evaluation:\n{performance_evaluation_str}\n\n"
+            f"Response Format:\n```json\n{json.dumps(response_format, indent=4)}\n```\n\n"
         )
 
         return prompt_string

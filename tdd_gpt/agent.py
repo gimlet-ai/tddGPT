@@ -231,7 +231,7 @@ class TddGPTAgent:
             action = self.output_parser.parse(assistant_reply)
 
             tools = {t.name: t for t in self.tools}
-            if action.name == FINISH_NAME or "finish" in parsed["thoughts"]["kanban"]["in_progress"].lower():
+            if action.name == FINISH_NAME or "finish " in parsed["thoughts"]["kanban"]["in_progress"].lower():
                 return action.args.get("response", "Goals completed! Exiting.") 
 
             if action.name in tools:
