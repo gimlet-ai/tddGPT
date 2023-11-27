@@ -292,6 +292,7 @@ class TddGPTAgent:
                 file_path = parsed["command"]["args"]["file_path"]
 
                 parsed_memory_to_add["Action"] = f'reading file {file_path}'
+                parsed_memory_to_add["Result"] = code_str
 
                 print(f'\033[92mAction:\033[0m reading file {file_path}')
                 print(f'\033[92mCode:\033[0m{code_str}\n')
@@ -300,6 +301,7 @@ class TddGPTAgent:
                 file_path = parsed["command"]["args"]["file_path"]
 
                 parsed_memory_to_add["Action"] = f'writing file {file_path}'
+                parsed_memory_to_add["Result"] = f'successfully written'
 
                 print(f'\033[92mAction:\033[0m writing file {file_path}')
                 print(f'\033[92mCode:\033[0m{code_str}\n')
