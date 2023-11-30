@@ -166,6 +166,7 @@ class TddGPTAgent:
                 messages=self.chat_history_memory.messages,
                 memory=self.memory,
                 user_input=user_input,
+                response_format="json",
             )
 
             print(f"\033[91mStep Number:\033[0m {loop_count}")
@@ -197,6 +198,7 @@ class TddGPTAgent:
             if parsed:
                 try:
                     print(f'\033[92mRole:\033[0m {parsed["thoughts"]["role"]}')
+                    print(f'\033[92mMilestone:\033[0m {parsed["thoughts"]["milestone"]}')
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
@@ -275,6 +277,7 @@ class TddGPTAgent:
             parsed_memory_to_add = {
                 "Step": loop_count,
                 "Role": parsed['thoughts']['role'],
+                "Milestone": parsed['thoughts']['milestone'],
                 "Thought": parsed['thoughts']['text'],
                 "Reasoning": parsed['thoughts']['reasoning'],
                 "Criticism": parsed['thoughts']['criticism'],

@@ -52,7 +52,7 @@ def main():
     # Initialize the vectorstore as empty
     embedding_size = 1536
     index = faiss.IndexFlatL2(embedding_size)
-    vectorstore = FAISS(embeddings_model.embed_query, index, InMemoryDocstore({}), {})
+    vectorstore = FAISS(embeddings_model, index, InMemoryDocstore({}), {})
 
     # Initialize the agent
     agent = TddGPTAgent.from_llm_and_tools(
