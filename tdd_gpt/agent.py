@@ -198,7 +198,8 @@ class TddGPTAgent:
             if parsed:
                 try:
                     print(f'\033[92mRole:\033[0m {parsed["thoughts"]["role"]}')
-                    print(f'\033[92mMilestone:\033[0m {parsed["thoughts"]["milestone"]}')
+                    print(f'\033[92mPhase:\033[0m {parsed["thoughts"]["phase"]}')
+                    print(f'\033[92mTests:\033[0m {parsed["thoughts"]["tests_status"]}')
                     print(f'\033[92mThought:\033[0m {parsed["thoughts"]["text"]}')
                     print(f'\033[92mReasoning:\033[0m {parsed["thoughts"]["reasoning"]}')
                     print(f'\033[92mCriticism:\033[0m {parsed["thoughts"]["criticism"]}')
@@ -275,16 +276,17 @@ class TddGPTAgent:
                 )
 
             parsed_memory_to_add = {
-                "Step": loop_count,
-                "Role": parsed['thoughts']['role'],
-                "Milestone": parsed['thoughts']['milestone'],
-                "Thought": parsed['thoughts']['text'],
-                "Reasoning": parsed['thoughts']['reasoning'],
-                "Criticism": parsed['thoughts']['criticism'],
-                "Kanban": {
-                  "Todo": parsed["thoughts"]["kanban"]["todo"],
-                  "InProgress": parsed["thoughts"]["kanban"]["in_progress"],
-                  "Done": parsed["thoughts"]["kanban"]["done"],
+                "step": loop_count,
+                "role": parsed['thoughts']['role'],
+                "phase": parsed['thoughts']['phase'],
+                "tests_status": parsed['thoughts']['tests_status'],
+                "thought": parsed['thoughts']['text'],
+                "reasoning": parsed['thoughts']['reasoning'],
+                "criticism": parsed['thoughts']['criticism'],
+                "kanban": {
+                  "todo": parsed["thoughts"]["kanban"]["todo"],
+                  "in_progress": parsed["thoughts"]["kanban"]["in_progress"],
+                  "done": parsed["thoughts"]["kanban"]["done"],
                 }
             }
 
